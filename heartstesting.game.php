@@ -195,6 +195,11 @@ class HeartsTesting extends Table
 			function playCard($card_id) {
 					self::checkAction("playCard");
 					$player_id = self::getActivePlayerId();
+
+					// Check whether the selected card can be played or not
+					$playable_cards = $this->checkPlayableCards($player_id);
+					if (!in_array($card_id, $playable_cards)) throw new BgaVisibleSystemException(self::_("You must play a card with the same suit"));
+
 					$this->cards->moveCard($card_id, 'cardsontable', $player_id);
 					// XXX check rules here
 					$currentCard = $this->cards->getCard($card_id);
@@ -212,6 +217,32 @@ class HeartsTesting extends Table
 					// Next player
 					$this->gamestate->nextState('playCard');
 			}
+
+			function checkPlayableCards ($player_id): array {
+	        // Get all data needed to check playable cards at the moment
+	        $currentTrickColor = self::getGameStateValue('trickColor');
+	        $hand = $this->cards->getPlayerHand($player_id);
+	        $playable_card_ids = [];
+
+	        $all_ids = self::getObjectListFromDB("SELECT card_id FROM card WHERE card_location = 'hand' AND card_location_arg = $player_id", true);
+
+	        if ($this->cards->getCardsInLocation('cardsontable', $player_id)) return []; // Already played a card
+
+					if (!$currentTrickColor) { // First card of the trick
+	            return $all_ids;
+					} // Broken Heart or no limitation, can play any card
+					else {
+	            // Must follow the lead suit if possible
+	            $same_suit = false;
+	            foreach ($hand as $card)
+	                if ($card['type'] == $currentTrickColor) {
+	                    $same_suit = true;
+	                    break;
+	                }
+	            if ($same_suit) return self::getObjectListFromDB("SELECT card_id FROM card WHERE card_type = $currentTrickColor AND card_location = 'hand' AND card_location_arg = $player_id", true); // Has at least 1 card of the same suit
+	            else return $all_ids; // If not, may play any card...
+	        }
+	    }
 
     /*
         Each time a player is doing some game action, one of the methods below is called.
