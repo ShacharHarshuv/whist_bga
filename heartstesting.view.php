@@ -43,6 +43,7 @@ class view_heartstesting_heartstesting extends game_view
         /*********** Place your code below:  ************/
 
         $template = self::getGameName() . "_" . self::getGameName();
+        $this->tpl['SCORE_LABEL'] = self::_("Score:");
 
         $directions = array( 'S', 'W', 'N', 'E' );
 
@@ -57,7 +58,8 @@ class view_heartstesting_heartstesting extends game_view
         }
         // this will make our My Hand text translatable
         $this->tpl['MY_HAND'] = self::_("My hand");
-
+        $this->tpl['ROUND_TRUMP'] = self::_("Round Trump:");
+        $this->tpl['ROUND'] = self::_("Round:");
 
         /*
 

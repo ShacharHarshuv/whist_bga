@@ -20,6 +20,13 @@
 require_once( APP_GAMEMODULE_PATH.'module/table/table.game.php' );
 
 
+/*
+ 1 = Spades
+ 2 = Hearts
+ 3 = Clubs
+ 4 = Diamonds
+*/
+
 class HeartsTesting extends Table
 {
 	function __construct( )
@@ -35,7 +42,7 @@ class HeartsTesting extends Table
 				self::initGameStateLabels( array(
                          "currentHandType" => 10,
                          "trickColor" => 11,
-                         "alreadyPlayedHearts" => 12,
+                         "trumpColor" => 12,
                           ) );
 
         $this->cards = self::getNew( "module.common.deck" );
@@ -88,8 +95,8 @@ class HeartsTesting extends Table
         // Set current trick color to zero (= no trick color)
         self::setGameStateInitialValue( 'trickColor', 0 );
 
-        // Mark if we already played hearts during this hand
-        self::setGameStateInitialValue( 'alreadyPlayedHearts', 0 );
+        //  Set current trump color to zero (= no trump color)
+        self::setGameStateInitialValue( 'trumpColor', 0 );
 
 				// Create cards
         $cards = array ();
@@ -156,6 +163,14 @@ class HeartsTesting extends Table
 
         // Cards played on the table
         $result['cardsontable'] = $this->cards->getCardsInLocation( 'cardsontable' );
+
+				// Record trackable information if the option is enabled
+        foreach ($result['players'] as $player_id => $players) {
+                //$cardswon = $this->cards->getCardsInLocation('cardswon', $player_id);
+                $score = 0;
+              //  foreach ($cardswon as $card) $score += $this->calculateCardPoints($card, $result['face_value_scoring'], $result['spades_scoring'], $result['jack_of_diamonds']);
+                $result['players'][$player_id]['hand_score'] = $score;
+							}
 
         return $result;
     }
@@ -344,12 +359,13 @@ class HeartsTesting extends Table
 		            // Notify player about his cards
 		            self::notifyPlayer($player_id, 'newHand', '', array ('cards' => $cards ));
 		        }
-		        self::setGameStateValue('alreadyPlayedHearts', 0);
+						// set trump color to 0 (= no color)
+		        self::setGameStateValue('trumpColor', 0);
 		        $this->gamestate->nextState("");
 		    }
 
 		    function stNewTrick() {
-		        // New trick: active the player who wins the last trick, or the player who own the club-2 card
+		        // New trick: active the player who wins the last trick
 		        // Reset trick color to 0 (= no color)
 		        self::setGameStateInitialValue('trickColor', 0);
 		        $this->gamestate->nextState();
@@ -364,6 +380,10 @@ class HeartsTesting extends Table
 		            $best_value = 0;
 		            $best_value_player_id = null;
 		            $currentTrickColor = self::getGameStateValue('trickColor');
+								$currentTrumpColor = self::getGameStateValue('trumpColor');
+								$best_trump_player_id = null;
+								$best_trump = 0;
+
 		            foreach ( $cards_on_table as $card ) {
 		                // Note: type = card color
 		                if ($card ['type'] == $currentTrickColor) {
@@ -371,8 +391,16 @@ class HeartsTesting extends Table
 		                        $best_value_player_id = $card ['location_arg']; // Note: location_arg = player who played this card on table
 		                        $best_value = $card ['type_arg']; // Note: type_arg = value of the card
 		                    }
-		                }
+		                } else if ($card ['type'] == $currentTrumpColor) {
+											if ($best_trump_player_id === null || $card ['type_arg'] > $best_trump) {
+													$best_trump_player_id = $card ['location_arg']; // Note: location_arg = player who played this card on table
+													$best_trump = $card ['type_arg']; // Note: type_arg = value of the card
+											}
+										}
 		            }
+								if ($best_trump > 0) {
+									$best_value_player_id = $best_trump_player_id;
+								}
 
 		            // Active this player => he's the one who starts the next trick
 		            $this->gamestate->changeActivePlayer( $best_value_player_id );

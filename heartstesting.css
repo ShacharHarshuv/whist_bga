@@ -123,3 +123,13 @@
     height: 96px;
     background-image: url('img/cards.jpg');
 }
+
+#roundtrump {
+    position: absolute;
+    top: 30%;
+    left: 70%;
+    margin-top: -50px;
+    margin-left: -50px;
+    width: 100px;
+    height: 100px;
+}

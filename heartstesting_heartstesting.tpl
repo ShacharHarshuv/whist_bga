@@ -30,14 +30,11 @@
 
     <!-- BEGIN playerhandblock -->
     <div class="playertable whiteblock playertable_{DIR}">
-        <div class="playertablename" style="color:#{PLAYER_COLOR}">
-            {PLAYER_NAME}
-        </div>
-        <div class="playertablecard" id="playertablecard_{PLAYER_ID}">
-        </div>
+        <div class="playertablename" style="color:#{PLAYER_COLOR}">{PLAYER_NAME}</div>
+        <div class="playertablecard" id="playertablecard_{PLAYER_ID}"></div>
+        <div class="playertablename" id="hand_score_wrap_{PLAYER_ID}">{SCORE_LABEL} <span id="hand_score_{PLAYER_ID}"></span></div>
     </div>
     <!-- END playerhandblock -->
-
 </div>
 
 <div id="myhand_wrap" class="whiteblock">
@@ -46,6 +43,8 @@
     </div>
 </div>
 
+<div id="roundtrump">{ROUND_TRUMP}<span id="round_trump_name"></span></div>
+<div id="roundNumber">{ROUND}<span id="round"></span></div>
 
 <script type="text/javascript">
 

@@ -31,7 +31,7 @@ function (dojo, declare) {
             // this.myGlobalValue = 0;
             this.cardwidth = 72;
             this.cardheight = 96;
-
+            this.score_counter = {};
         },
 
         /*
@@ -55,8 +55,10 @@ function (dojo, declare) {
             for( var player_id in gamedatas.players )
             {
                 var player = gamedatas.players[player_id];
-
                 // TODO: Setting up players boards if needed
+                this.score_counter[player_id] = new ebg.counter();
+                this.score_counter[player_id].create($('hand_score_' + player_id));
+                this.score_counter[player_id].setValue(player.hand_score);
             }
 
             // TODO: Set up your game interface here, according to "gamedatas"
@@ -66,6 +68,12 @@ function (dojo, declare) {
             this.playerHand.create( this, $('myhand'), this.cardwidth, this.cardheight );
 
             this.playerHand.image_items_per_row = 13; // 13 images per row
+
+            this.round = new ebg.counter();
+            this.round.create($('round'));
+            this.round.setValue(1)
+
+            $('round_trump_name').textContent = "Spade"
 
             // Create cards types:
             for (var color = 1; color <= 4; color++) {
