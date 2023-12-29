@@ -43,6 +43,7 @@ class HeartsTesting extends Table
                          "currentHandType" => 10,
                          "trickColor" => 11,
                          "trumpColor" => 12,
+												 "round_number" => 13,
                           ) );
 
         $this->cards = self::getNew( "module.common.deck" );
@@ -97,6 +98,9 @@ class HeartsTesting extends Table
 
         //  Set current trump color to zero (= no trump color)
         self::setGameStateInitialValue( 'trumpColor', 0 );
+
+				//  Set current trump color to zero (= no trump color)
+				self::setGameStateInitialValue( 'round_number', 1 );
 
 				// Create cards
         $cards = array ();
@@ -163,6 +167,8 @@ class HeartsTesting extends Table
 
         // Cards played on the table
         $result['cardsontable'] = $this->cards->getCardsInLocation( 'cardsontable' );
+
+				$result['round_number'] = self::getGameStateValue('round_number');
 
 				// Record trackable information if the option is enabled
         foreach ($result['players'] as $player_id => $players) {
@@ -356,16 +362,18 @@ class HeartsTesting extends Table
 		        // Take back all cards (from any location => null) to deck
 		        $this->cards->moveAllCardsInLocation(null, "deck");
 		        $this->cards->shuffle('deck');
+
 		        // Deal 13 cards to each players
 		        // Create deck, shuffle it and give 13 initial cards
 		        $players = self::loadPlayersBasicInfos();
 		        foreach ( $players as $player_id => $player ) {
 		            $cards = $this->cards->pickCards(13, 'deck', $player_id);
 		            // Notify player about his cards
-		            self::notifyPlayer($player_id, 'newHand', '', array ('cards' => $cards ));
+		            self::notifyPlayer($player_id, 'newHand', '', array ('cards' => $cards));
 		        }
 						// set trump color to 0 (= no color)
 		        self::setGameStateValue('trumpColor', 0);
+
 		        $this->gamestate->nextState("");
 		    }
 
@@ -478,6 +486,12 @@ class HeartsTesting extends Table
 					$newScores = self::getCollectionFromDb("SELECT player_id, player_score FROM player", true );
 					self::notifyAllPlayers( "newScores", '', array( 'newScores' => $newScores ) );
 
+					// increase round number
+					$round = self::getGameStateValue( 'round_number' ) ;
+					$round = $round + 1;
+					self::setGameStateValue('round_number', $round);
+					self::notifyAllPlayers( "newRound", '', array( 'round_number' => $round ) );
+
 					///// Test if this is the end of the game
 					foreach ( $newScores as $player_id => $score ) {
 							if ($score <= -100) {
@@ -486,7 +500,6 @@ class HeartsTesting extends Table
 									return;
 							}
 					}
-
 
 					$this->gamestate->nextState("nextHand");
 		    }

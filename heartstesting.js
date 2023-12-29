@@ -71,7 +71,7 @@ function (dojo, declare) {
 
             this.round = new ebg.counter();
             this.round.create($('round'));
-            this.round.setValue(1)
+            this.round.setValue(gamedatas.round_number)
 
             $('round_trump_name').textContent = "Spade"
 
@@ -347,6 +347,7 @@ function (dojo, declare) {
             this.notifqueue.setSynchronous( 'trickWin', 1000 );
             dojo.subscribe( 'giveAllCardsToPlayer', this, "notif_giveAllCardsToPlayer" );
             dojo.subscribe( 'newScores', this, "notif_newScores" );
+            dojo.subscribe( 'newRound', this, "notif_newRound" );
 
             dojo.subscribe('pass', this, "notif_pass");
             // TODO: here, associate your game notifications with local methods
@@ -404,6 +405,11 @@ function (dojo, declare) {
                this.scoreCtrl[player_id].toValue(notif.args.newScores[player_id]);
            }
        },
+
+       notif_newRound : function(notif) {
+          // Update round' number
+          this.round.setValue(notif.args.round_number);
+      },
 
         // TODO: from this point and below, you can write your game notifications handling methods
 
