@@ -149,7 +149,6 @@ function (dojo, declare) {
 
             switch( stateName )
             {
-
             /* Example:
 
             case 'myGameState':
@@ -166,6 +165,8 @@ function (dojo, declare) {
             }
         },
 
+
+
         // onUpdateActionButtons: in this method you can manage "action buttons" that are displayed in the
         //                        action status bar (ie: the HTML links in the status bar).
         //
@@ -177,6 +178,10 @@ function (dojo, declare) {
             {
                 switch( stateName )
                 {
+                  case 'playerTurn':
+                        this.addActionButton( 'pass_button', _('Pass'), ()=>this.ajaxcallwrapper('pass') );
+                        break;
+                }
 /*
                  Example:
 
@@ -189,7 +194,6 @@ function (dojo, declare) {
                     this.addActionButton( 'button_3_id', _('Button 3 label'), 'onMyMethodToCall3' );
                     break;
 */
-                }
             }
         },
 
@@ -203,6 +207,18 @@ function (dojo, declare) {
 
         */
 
+
+        ajaxcallwrapper: function(action, args, handler) {
+  				if (!args) args = []; // this allows to skip args parameter for action which do not require them
+
+  				args.lock = true; // this allows to avoid rapid action clicking which can cause race condition on server
+
+  				if (this.checkAction(action)) { // this does all the proper check that player is active and action is declared
+  					this.ajaxcall("/" + this.game_name + "/" + this.game_name + "/" + action + ".html", args, // this is mandatory fluff
+  						this, (result) => { },  // success result handler is empty - it is never needed
+                                                  handler); // this is real result handler - it called both on success and error, its is optional param - you rarely need it
+  				}
+			  },
 
         // Get card unique identifier based on its color and value
         getCardUniqueId : function(color, value) {
@@ -332,6 +348,7 @@ function (dojo, declare) {
             dojo.subscribe( 'giveAllCardsToPlayer', this, "notif_giveAllCardsToPlayer" );
             dojo.subscribe( 'newScores', this, "notif_newScores" );
 
+            dojo.subscribe('pass', this, "notif_pass");
             // TODO: here, associate your game notifications with local methods
 
             // Example 1: standard notification handling
@@ -360,6 +377,10 @@ function (dojo, declare) {
         notif_playCard : function(notif) {
             // Play a card on the table
             this.playCardOnTable(notif.args.player_id, notif.args.color, notif.args.value, notif.args.card_id);
+        },
+
+        notif_pass : function(notif) {
+
         },
 
         notif_trickWin : function(notif) {

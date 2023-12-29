@@ -233,6 +233,11 @@ class HeartsTesting extends Table
 					$this->gamestate->nextState('playCard');
 			}
 
+			function pass() {
+				self::checkAction("pass");
+				$this->gamestate->nextState('playCard');
+			}
+
 			function checkPlayableCards ($player_id): array {
 	        // Get all data needed to check playable cards at the moment
 	        $currentTrickColor = self::getGameStateValue('trickColor');

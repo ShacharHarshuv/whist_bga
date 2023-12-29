@@ -41,6 +41,12 @@
 
   	// TODO: defines your action entry points there
 
+    public function pass() {
+      self::setAjaxMode();
+      $this->game->pass();
+      self::ajaxResponse();
+    }
+
     public function playCard() {
             self::setAjaxMode();
             $card_id = self::getArg("id", AT_posint, true);

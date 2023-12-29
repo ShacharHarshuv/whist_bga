@@ -37,14 +37,16 @@
     <!-- END playerhandblock -->
 </div>
 
+<div id="roundInfo">
+  <div id="roundtrump">{ROUND_TRUMP}<span id="round_trump_name"></span></div>
+  <div id="roundNumber">{ROUND}<span id="round"></span></div>
+</div>
+
 <div id="myhand_wrap" class="whiteblock">
     <h3>{MY_HAND}</h3>
     <div id="myhand">
     </div>
 </div>
-
-<div id="roundtrump">{ROUND_TRUMP}<span id="round_trump_name"></span></div>
-<div id="roundNumber">{ROUND}<span id="round"></span></div>
 
 <script type="text/javascript">
 
