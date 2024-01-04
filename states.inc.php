@@ -69,7 +69,7 @@ $machinestates = array(
             "type" => "game",
             "action" => "stNewHand",
             "updateGameProgression" => true,
-            "transitions" => array( "" => 30 )
+            "transitions" => array( "" => 23 )
         ),
 
     21 => array(
@@ -92,14 +92,22 @@ $machinestates = array(
     ),
 
 
-    // 23 => array(
-    //     "name" => "playerBid",
-    //     "description" => clienttranslate('${actplayer} must place his bid or pass'),
-    //     "descriptionmyturn" => clienttranslate('${you} must place a bid or pass'),
-    //     "type" => "activeplayer",
-    //     "possibleactions" => array( "playBid" ),
-    //     "transitions" => array( "playBid" => 31 )
-    // ),
+    23 => array(
+        "name" => "playerBid",
+        "description" => clienttranslate('${actplayer} must place his bid or pass'),
+        "descriptionmyturn" => clienttranslate('${you} must place a bid or pass'),
+        "type" => "activeplayer",
+        "possibleactions" => array( "playerBid", "bid", "pass" ),
+        "transitions" => array( "playerBid" => 24, "bid" => 24, "pass" => 24, "nextBidder" => 24)
+    ),
+
+    24 => array(
+        "name" => "nextBidder",
+        "description" => "",
+        "type" => "game",
+        "action" => "stNextBidder",
+        "transitions" => array( "nextBidder" => 23, "newTrick" => 30, "playerBid" => 23)
+    ),
 
     // Trick
 
@@ -115,8 +123,8 @@ $machinestates = array(
         "description" => clienttranslate('${actplayer} must play a card'),
         "descriptionmyturn" => clienttranslate('${you} must play a card'),
         "type" => "activeplayer",
-        "possibleactions" => array( "playCard", "pass"),
-        "transitions" => array( "playCard" => 32, "pass" => 32)
+        "possibleactions" => array( "playCard"),
+        "transitions" => array( "playCard" => 32)
     ),
     32 => array(
         "name" => "nextPlayer",

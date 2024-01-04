@@ -178,8 +178,9 @@ function (dojo, declare) {
             {
                 switch( stateName )
                 {
-                  case 'playerTurn':
+                  case 'playerBid':
                         this.addActionButton( 'pass_button', _('Pass'), ()=>this.ajaxcallwrapper('pass') );
+                        this.addActionButton( 'bid_button', _('Bid'), 'onPlayerBid' );
                         break;
                 }
 /*
@@ -195,6 +196,27 @@ function (dojo, declare) {
                     break;
 */
             }
+        },
+
+        onPlayerBid: function() {
+            const action = "bid";
+            if (!this.checkAction(action)) return;
+            var bidValue = $('bid_value').value;
+            var shape = $('shape').value;
+            // // Check the number of selected items
+            // const selected_cards = this.playerHand.getSelectedItems();
+            // if (selected_cards.length !== 3) {
+            //     this.showMessage(_('You must select exactly 3 cards'), "error");
+            //     return;
+            // }
+            //
+            // // Get card ids
+            // let card_ids = '';
+            // for (let i in selected_cards) card_ids += selected_cards[i].id + ';';
+            //
+            // // Give selected cards
+            // this.playerHand.unselectAll();
+            this.ajaxcall("/" + this.game_name + "/" +  this.game_name + "/" + action + ".html", {lock: true, bid_value: bidValue, shape: shape}, this, function (result) {}, function (is_error) {});
         },
 
         ///////////////////////////////////////////////////

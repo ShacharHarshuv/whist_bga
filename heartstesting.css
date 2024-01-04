@@ -69,10 +69,18 @@
 
 /** Table layout **/
 
+#game_board_wrap {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-evenly;
+}
+
 #playertables {
     position: relative;
-    width: 710px;
-    height: 340px;
+    width: 400px;
+    height: 335px;
+    text-align: center;
+    margin: auto 5px auto auto;
 }
 
 .playertablename {
@@ -125,7 +133,13 @@
 }
 
 #roundInfo {
-    position: absolute;
-    top: 10%;
+    width: min-content;
+    text-align: center;
+    margin: auto auto auto 5px;
+}
+
+#bidInfo {
+  display: inline-block;
+    top: 20%;
     left: 50%;
 }

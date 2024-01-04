@@ -32,6 +32,7 @@ PRIMARY KEY (`card_id`)
 
 -- add info about first player
 ALTER TABLE `player` ADD `player_first` BOOLEAN NOT NULL DEFAULT '0';
+ALTER TABLE `player` ADD `player_bid_value` INT UNSIGNED NOT NULL DEFAULT '-1';
 
 -- Example 2: add a custom field to the standard "player" table
 -- ALTER TABLE `player` ADD `player_my_custom_field` INT UNSIGNED NOT NULL DEFAULT '0';

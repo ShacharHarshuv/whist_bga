@@ -114,7 +114,6 @@ class HeartsTesting extends Table
 
         $this->cards->createCards( $cards, 'deck' );
 
-
 				// Shuffle deck
         $this->cards->shuffle('deck');
         // Deal 13 cards to each players
@@ -237,11 +236,6 @@ class HeartsTesting extends Table
 									'color_displayed' => $this->colors [$currentCard ['type']] ['name'] ));
 					// Next player
 					$this->gamestate->nextState('playCard');
-			}
-
-			function pass() {
-				self::checkAction("pass");
-				$this->gamestate->nextState('playCard');
 			}
 
 			function checkPlayableCards ($player_id): array {
@@ -382,6 +376,58 @@ class HeartsTesting extends Table
 		        // Reset trick color to 0 (= no color)
 		        self::setGameStateInitialValue('trickColor', 0);
 		        $this->gamestate->nextState();
+		    }
+
+				function pass() {
+					self::checkAction("pass");
+
+					$player_id = self::getActivePlayerId();
+					$sql = "UPDATE player SET player_bid_value=-2 WHERE player_id='$player_id'";
+
+					$this->gamestate->nextState('playerBid');
+				}
+
+
+				function stNextBidder() {
+						// New trick: active the player who wins the last trick
+						// Reset trick color to 0 (= no color)
+						self::activeNextPlayer();
+						$transition = 'playerBid';
+						$this->gamestate->nextState($transition);
+				}
+
+				function playerBid($bid_value, $shape) {
+
+						// $active_player_id = self::getActivePlayerId();
+						// $best_bid_value = 0;
+		        // $best_value_player_id = null;
+						// $num_passes = 0;
+						// $num_non_bet = 0;
+						//
+						// $sql = "UPDATE player SET player_bid_value=$bid_value WHERE player_id='$active_player_id'";
+						//
+						// $sqlPlayers = "SELECT player_id id, player_bid_value player_bid FROM player ";
+						//
+						// $result['players'] = self::getCollectionFromDb( $sqlPlayers );
+						//
+						// foreach ($result['players'] as $player_id => $players) {
+						// 	//  foreach ($cardswon as $card) $score += $this->calculateCardPoints($card, $result['face_value_scoring'], $result['spades_scoring'], $result['jack_of_diamonds']);
+						// 	if ($result['players'][$player_id]['player_bid_value'] == -1) { // no-bid
+						// 		$num_non_bet = $num_non_bet + 1;
+						// 	} else if ($result['players'][$player_id]['player_bid_value'] == -2) { // pass
+						// 		$num_passes = $num_passes + 1;
+						// 	} else if ($result['players'][$player_id]['player_bid_value'] > $best_bid_value) { // check best bid
+						// 		$best_bid_value = $result['players'][$player_id]['player_bid_value'];
+						// 		$best_value_player_id = $player_id;
+						// 	}
+						// }
+						//
+						// if ($num_non_bet == 0 && $num_passes == 3) {
+						// 	$this->gamestate->changeActivePlayer( $best_value_player_id );
+						// }
+
+						$transition = 'nextBidder';
+		        $this->gamestate->nextState($transition);
 		    }
 
 		    function stNextPlayer() {

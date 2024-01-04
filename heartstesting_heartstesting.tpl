@@ -25,21 +25,35 @@
     Please REMOVE this comment before publishing your game on BGA
 -->
 
+<div id="game_board_wrap">
+  <div id="playertables">
 
-<div id="playertables">
+      <!-- BEGIN playerhandblock -->
+      <div class="playertable whiteblock playertable_{DIR}">
+          <div class="playertablename" style="color:#{PLAYER_COLOR}">{PLAYER_NAME}</div>
+          <div class="playertablecard" id="playertablecard_{PLAYER_ID}"></div>
+          <div class="playertablename" id="hand_score_wrap_{PLAYER_ID}">{SCORE_LABEL} <span id="hand_score_{PLAYER_ID}"></span></div>
+      </div>
+      <!-- END playerhandblock -->
+  </div>
 
-    <!-- BEGIN playerhandblock -->
-    <div class="playertable whiteblock playertable_{DIR}">
-        <div class="playertablename" style="color:#{PLAYER_COLOR}">{PLAYER_NAME}</div>
-        <div class="playertablecard" id="playertablecard_{PLAYER_ID}"></div>
-        <div class="playertablename" id="hand_score_wrap_{PLAYER_ID}">{SCORE_LABEL} <span id="hand_score_{PLAYER_ID}"></span></div>
-    </div>
-    <!-- END playerhandblock -->
-</div>
+  <div id="roundInfo" style="margin: 10px auto;>
+    <div id="roundtrump">{ROUND_TRUMP}<span id="round_trump_name"></span></div>
+    <div id="roundNumber">{ROUND}<span id="round"></span></div>
+  </div>
 
-<div id="roundInfo">
-  <div id="roundtrump">{ROUND_TRUMP}<span id="round_trump_name"></span></div>
-  <div id="roundNumber">{ROUND}<span id="round"></span></div>
+  <div id="bidInfo">
+    <form>
+      <label for="tricks">Tricks:</label><br>
+      <input type="number" id="bid_value" value="0" min="0" max="13" step="1" />
+    </form>
+  <select name="shapes" id="shape">
+      <option value="1">Spade</option>
+      <option value="2">Heart</option>
+      <option value="3">Club</option>
+      <option value="4">Diamond</option>
+  </select>
+  </div>
 </div>
 
 <div id="myhand_wrap" class="whiteblock">

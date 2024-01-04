@@ -48,11 +48,22 @@
     }
 
     public function playCard() {
-            self::setAjaxMode();
-            $card_id = self::getArg("id", AT_posint, true);
-            $this->game->playCard($card_id);
-            self::ajaxResponse();
-        }
+      self::setAjaxMode();
+      $card_id = self::getArg("id", AT_posint, true);
+      $this->game->playCard($card_id);
+      self::ajaxResponse();
+    }
+
+    public function bid() {
+        self::setAjaxMode();
+        $bidValue = self::getArg("bid_value", AT_posint, true);
+        $shape = self::getArg("shape", AT_posint, true);
+
+        $this->game->playerBid($bidValue, $shape);
+        self::ajaxResponse();
+    }
+
+
     /*
 
     Example:
