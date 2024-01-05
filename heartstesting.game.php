@@ -44,6 +44,9 @@ class HeartsTesting extends Table
                          "trickColor" => 11,
                          "trumpColor" => 12,
 												 "round_number" => 13,
+												 "num_of_passes" => 14,
+												 "current_bid" => 15,
+												 "current_bid_shape" => 16,
                           ) );
 
         $this->cards = self::getNew( "module.common.deck" );
@@ -101,6 +104,13 @@ class HeartsTesting extends Table
 
 				//  Set current trump color to zero (= no trump color)
 				self::setGameStateInitialValue( 'round_number', 1 );
+
+				//  Set current trump color to zero (= no trump color)
+				self::setGameStateInitialValue( 'num_of_passes', 0 );
+
+				self::setGameStateInitialValue( 'current_bid', 0 );
+
+				self::setGameStateInitialValue( 'current_bid_shape', 0 );
 
 				// Create cards
         $cards = array ();
@@ -383,51 +393,130 @@ class HeartsTesting extends Table
 
 					$player_id = self::getActivePlayerId();
 					$sql = "UPDATE player SET player_bid_value=-2 WHERE player_id='$player_id'";
+					self::DbQuery($sql);
 
-					$this->gamestate->nextState('playerBid');
+					$passes = self::getGameStateValue( 'num_of_passes' );
+					self::setGameStateValue('num_of_passes', $passes + 1);
+
+					self::notifyAllPlayers('playerPass', clienttranslate('${player_name} passes'), array (
+									'player_name' => self::getActivePlayerName()));
+
+					$this->gamestate->nextState('nextBidder');
 				}
 
 
 				function stNextBidder() {
-						// New trick: active the player who wins the last trick
-						// Reset trick color to 0 (= no color)
-						self::activeNextPlayer();
-						$transition = 'playerBid';
-						$this->gamestate->nextState($transition);
+					$active_player_id = self::getActivePlayerId();
+
+					$best_bid_value = 0;
+					$best_value_player_id = null;
+					$num_passes = 0;
+					$num_non_bet = 0;
+
+					$sqlPlayers = "SELECT player_id id, player_bid_value player_bid, player_name name FROM player ";
+
+					$result['players'] = self::getCollectionFromDb( $sqlPlayers );
+					$player_name = self::getActivePlayerName();
+
+					self::dump( "player bid:", $player_name);
+
+					foreach ($result['players'] as $player_id => $players) {
+						$current_bid = (int)$result['players'][$player_id]['player_bid'];
+						self::dump( "Current bid", $current_bid );
+
+						if ($current_bid == -1) { // no-bid
+							++$num_non_bet;
+							self::dump( "we are non bid:", $num_non_bet);
+						} else if ($current_bid == -2) { // pass
+							++$num_passes;
+							self::dump( "we are pass:", $num_passes);
+						} else if ($current_bid > $best_bid_value) { // check best bid
+							$best_bid_value = $current_bid;
+							$best_value_player_id = $player_id;
+							self::dump( "we are best bid:", $best_bid_value);
+						}
+					}
+
+					self::dump( "num_non_bet:", $num_non_bet);
+					self::dump( "num_passes:", $num_passes);
+					self::dump( "best_bid_value:", $best_bid_value);
+
+					$passes = self::getGameStateValue( 'num_of_passes' );
+					self::dump( "num_passes_global:", $passes);
+
+					self::activeNextPlayer();
+					if ($num_non_bet == 0 && $passes == 3) {
+						self::notifyAllPlayers("bids", clienttranslate('${player_name} won the bid with ${value_displayed} ${color_displayed}'), array (
+										'player_name' => self::getActivePlayerName(),
+										'value_displayed' => self::getGameStateValue( 'current_bid' ),
+										'color_displayed' => $this->colors [self::getGameStateValue( 'current_bid_shape' )] ['name'] ));
+						$this->gamestate->nextState('newTrick');
+					} else {
+						$this->gamestate->nextState('playerBid');
+					}
 				}
 
 				function playerBid($bid_value, $shape) {
+						$current_bid = self::getGameStateValue( 'current_bid' );
+						$current_bid_shape = self::getGameStateValue( 'current_bid_shape' );
 
-						// $active_player_id = self::getActivePlayerId();
-						// $best_bid_value = 0;
-		        // $best_value_player_id = null;
-						// $num_passes = 0;
-						// $num_non_bet = 0;
-						//
-						// $sql = "UPDATE player SET player_bid_value=$bid_value WHERE player_id='$active_player_id'";
-						//
-						// $sqlPlayers = "SELECT player_id id, player_bid_value player_bid FROM player ";
-						//
-						// $result['players'] = self::getCollectionFromDb( $sqlPlayers );
-						//
-						// foreach ($result['players'] as $player_id => $players) {
-						// 	//  foreach ($cardswon as $card) $score += $this->calculateCardPoints($card, $result['face_value_scoring'], $result['spades_scoring'], $result['jack_of_diamonds']);
-						// 	if ($result['players'][$player_id]['player_bid_value'] == -1) { // no-bid
-						// 		$num_non_bet = $num_non_bet + 1;
-						// 	} else if ($result['players'][$player_id]['player_bid_value'] == -2) { // pass
-						// 		$num_passes = $num_passes + 1;
-						// 	} else if ($result['players'][$player_id]['player_bid_value'] > $best_bid_value) { // check best bid
-						// 		$best_bid_value = $result['players'][$player_id]['player_bid_value'];
-						// 		$best_value_player_id = $player_id;
-						// 	}
-						// }
-						//
-						// if ($num_non_bet == 0 && $num_passes == 3) {
-						// 	$this->gamestate->changeActivePlayer( $best_value_player_id );
-						// }
+						if ($bid_value < 5) {
+							throw new BgaVisibleSystemException(self::_("Bid value must be at lease 5"));
+						}
 
+						// No bid yet
+						if ($current_bid == 0 || $this->isNewWinningBid($bid_value, $shape, $current_bid, $current_bid_shape)) {
+							self::setGameStateValue('current_bid', $bid_value);
+							self::setGameStateValue('current_bid_shape', $shape);
+							self::setGameStateValue('num_of_passes', 0);
+						} else {
+							throw new BgaVisibleSystemException(self::_("Bid is not strong enough"));
+						}
+
+						// Update bid in DB
+						$active_player_id = self::getActivePlayerId();
+						$sql = "UPDATE player SET player_bid_value=$bid_value WHERE player_id='$active_player_id'";
+						self::DbQuery($sql);
+
+						// And notify
+						self::notifyAllPlayers('playerBid', clienttranslate('${player_name} bids ${value_displayed} ${color_displayed}'), array (
+										'i18n' => array ('color_displayed','value_displayed' ),'player_id' => $active_player_id,
+										'player_name' => self::getActivePlayerName(),
+										'value_displayed' => $bid_value,
+										'color_displayed' => $this->colors [$shape] ['name'] ));
+
+						// self::setGameStateValue('num_of_passes', 0);
 						$transition = 'nextBidder';
 		        $this->gamestate->nextState($transition);
+		    }
+
+				function getShapePower($shape) {
+					/*
+					 1 = Spades => 4
+					 2 = Hearts => 3
+					 3 = Clubs => 1
+					 4 = Diamonds => 2
+					*/
+					if ($shape == 1) { // Spade
+						return 4;
+					}
+					if ($shape == 2) { // Heart
+						return 3;
+					}
+					if ($shape == 3) { // Club
+						return 1;
+					}
+					if ($shape == 4) { // Diamond
+						return 2;
+					}
+		    }
+
+				function isNewWinningBid($bid_value, $shape, $current_bid, $current_bid_shape) {
+					$better_shape = $this->getShapePower($shape) > $this->getShapePower($current_bid_shape);
+					$better_value = $bid_value > $current_bid;
+					$same_value = $bid_value == $current_bid;
+
+					return ($same_value == true && $better_shape == true) || $better_value;
 		    }
 
 		    function stNextPlayer() {

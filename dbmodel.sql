@@ -30,9 +30,12 @@ PRIMARY KEY (`card_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 AUTO_INCREMENT=1 ;
 
 
--- add info about first player
-ALTER TABLE `player` ADD `player_first` BOOLEAN NOT NULL DEFAULT '0';
-ALTER TABLE `player` ADD `player_bid_value` INT UNSIGNED NOT NULL DEFAULT '-1';
 
+-- add info about first player
+-- ALTER TABLE `player` ADD `player_first` BOOLEAN NOT NULL DEFAULT '0';
+-- ALTER TABLE `player` ADD `player_bid_value` int(10) signed NOT NULL DEFAULT -1;
+-- ALTER TABLE `player` ADD `player_bid_value` SMALLINT UNSIGNED NOT NULL DEFAULT '15';
+ALTER TABLE `player` ADD `player_bid_value` SMALLINT SIGNED NOT NULL DEFAULT '-1';
+--ALTER TABLE `player` ADD `player_bid_value` INT(1) UNSIGNED NOT NULL;
 -- Example 2: add a custom field to the standard "player" table
 -- ALTER TABLE `player` ADD `player_my_custom_field` INT UNSIGNED NOT NULL DEFAULT '0';
