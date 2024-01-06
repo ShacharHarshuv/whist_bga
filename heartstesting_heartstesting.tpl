@@ -32,7 +32,8 @@
       <div class="playertable whiteblock playertable_{DIR}">
           <div class="playertablename" style="color:#{PLAYER_COLOR}">{PLAYER_NAME}</div>
           <div class="playertablecard" id="playertablecard_{PLAYER_ID}"></div>
-          <div class="playertablename" id="hand_score_wrap_{PLAYER_ID}">{SCORE_LABEL} <span id="hand_score_{PLAYER_ID}"></span></div>
+          <div class="tricks" id="tricks_wrap_{PLAYER_ID}">{TRICKS_LABEL} <span id="tricks_{PLAYER_ID}"></span></div>
+          <div class="tricks" id="tricks_need_wrap_{PLAYER_ID}">{TRICKS_NEED_LABEL} <span id="tricks_need_{PLAYER_ID}"></span></div>
       </div>
       <!-- END playerhandblock -->
   </div>

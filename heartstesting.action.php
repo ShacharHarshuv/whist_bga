@@ -63,6 +63,14 @@
         self::ajaxResponse();
     }
 
+    public function bet() {
+        self::setAjaxMode();
+        $bidValue = self::getArg("bid_value", AT_posint, true);
+
+        $this->game->playerBet($bidValue);
+        self::ajaxResponse();
+    }
+
 
     /*
 

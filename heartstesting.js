@@ -31,7 +31,8 @@ function (dojo, declare) {
             // this.myGlobalValue = 0;
             this.cardwidth = 72;
             this.cardheight = 96;
-            this.score_counter = {};
+            this.tricks_counter = {};
+            this.tricks_need_counter = {};
         },
 
         /*
@@ -56,9 +57,13 @@ function (dojo, declare) {
             {
                 var player = gamedatas.players[player_id];
                 // TODO: Setting up players boards if needed
-                this.score_counter[player_id] = new ebg.counter();
-                this.score_counter[player_id].create($('hand_score_' + player_id));
-                this.score_counter[player_id].setValue(player.hand_score);
+                this.tricks_counter[player_id] = new ebg.counter();
+                this.tricks_counter[player_id].create($('tricks_' + player_id));
+                this.tricks_counter[player_id].setValue(parseInt(player.taken));
+
+                this.tricks_need_counter[player_id] = new ebg.counter();
+                this.tricks_need_counter[player_id].create($('tricks_need_' + player_id));
+                this.tricks_need_counter[player_id].setValue(parseInt(player.tricks));
             }
 
             // TODO: Set up your game interface here, according to "gamedatas"
@@ -134,6 +139,10 @@ function (dojo, declare) {
                 break;
            */
 
+           case 'playerTurn':
+                dojo.style( 'bidInfo', 'display', 'none' );
+           break;
+
 
             case 'dummmy':
                 break;
@@ -182,6 +191,9 @@ function (dojo, declare) {
                         this.addActionButton( 'pass_button', _('Pass'), ()=>this.ajaxcallwrapper('pass') );
                         this.addActionButton( 'bid_button', _('Bid'), 'onPlayerBid' );
                         break;
+                  case 'playerBet':
+                        this.addActionButton( 'bet_button', _('Bet'), 'onPlayerBet' );
+                        break;
                 }
 /*
                  Example:
@@ -217,6 +229,14 @@ function (dojo, declare) {
             // // Give selected cards
             // this.playerHand.unselectAll();
             this.ajaxcall("/" + this.game_name + "/" +  this.game_name + "/" + action + ".html", {lock: true, bid_value: bidValue, shape: shape}, this, function (result) {}, function (is_error) {});
+        },
+
+        onPlayerBet: function() {
+          const action = "bet";
+          if (!this.checkAction(action)) return;
+          var bidValue = $('bid_value').value;
+
+          this.ajaxcall("/" + this.game_name + "/" +  this.game_name + "/" + action + ".html", {lock: true, bid_value: bidValue}, this, function (result) {}, function (is_error) {});
         },
 
         ///////////////////////////////////////////////////
@@ -370,6 +390,7 @@ function (dojo, declare) {
             dojo.subscribe( 'giveAllCardsToPlayer', this, "notif_giveAllCardsToPlayer" );
             dojo.subscribe( 'newScores', this, "notif_newScores" );
             dojo.subscribe( 'newRound', this, "notif_newRound" );
+            dojo.subscribe( 'playerBet', this, "notif_playerBet" );
 
             dojo.subscribe('pass', this, "notif_pass");
             // TODO: here, associate your game notifications with local methods
@@ -408,6 +429,7 @@ function (dojo, declare) {
 
         notif_trickWin : function(notif) {
             // We do nothing here (just wait in order players can view the 4 cards played before they're gone.
+            this.tricks_counter[notif.args.player_id].incValue(1);
         },
         notif_giveAllCardsToPlayer : function(notif) {
             // Move all cards on table to given table, then destroy them
@@ -432,6 +454,11 @@ function (dojo, declare) {
           // Update round' number
           this.round.setValue(notif.args.round_number);
       },
+
+        notif_playerBet : function(notif) {
+           // Update round' number
+           this.tricks_need_counter[notif.args.player_id].setValue(notif.args.value_displayed);
+       },
 
         // TODO: from this point and below, you can write your game notifications handling methods
 

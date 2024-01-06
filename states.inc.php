@@ -106,7 +106,24 @@ $machinestates = array(
         "description" => "",
         "type" => "game",
         "action" => "stNextBidder",
-        "transitions" => array( "nextBidder" => 23, "newTrick" => 30, "playerBid" => 23)
+        "transitions" => array( "nextBidder" => 23, "playerBet" => 25, "playerBid" => 23)
+    ),
+
+    25 => array(
+        "name" => "playerBet",
+        "description" => clienttranslate('${actplayer} must place their bet'),
+        "descriptionmyturn" => clienttranslate('${you} must place their bet'),
+        "type" => "activeplayer",
+        "possibleactions" => array( "playerBet", "bet" ),
+        "transitions" => array( "playerBet" => 25, "bet" => 26, "nextBet" => 26)
+    ),
+
+    26 => array(
+        "name" => "nextBet",
+        "description" => "",
+        "type" => "game",
+        "action" => "stNextBet",
+        "transitions" => array( "nextBet" => 25, "newTrick" => 30, "playerBet" => 25)
     ),
 
     // Trick

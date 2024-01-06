@@ -166,7 +166,7 @@ class HeartsTesting extends Table
 
         // Get information about players
         // Note: you can retrieve some extra field you added for "player" table in "dbmodel.sql" if you need it.
-        $sql = "SELECT player_id id, player_score score FROM player ";
+        $sql = "SELECT player_id id, tricks_taken taken, tricks_need tricks FROM player ";
         $result['players'] = self::getCollectionFromDb( $sql );
 
         // TODO: Gather all information about current game situation (visible by player $current_player_id).
@@ -179,13 +179,15 @@ class HeartsTesting extends Table
 
 				$result['round_number'] = self::getGameStateValue('round_number');
 
-				// Record trackable information if the option is enabled
+
         foreach ($result['players'] as $player_id => $players) {
-                //$cardswon = $this->cards->getCardsInLocation('cardswon', $player_id);
-                $score = 0;
-              //  foreach ($cardswon as $card) $score += $this->calculateCardPoints($card, $result['face_value_scoring'], $result['spades_scoring'], $result['jack_of_diamonds']);
-                $result['players'][$player_id]['hand_score'] = $score;
-							}
+					self::dump( "player bet :", $result['players'][$player_id]['tricks']);
+        	//$cardswon = $this->cards->getCardsInLocation('cardswon', $player_id);
+        	//  foreach ($cardswon as $card) $score += $this->calculateCardPoints($card, $result['face_value_scoring'], $result['spades_scoring'], $result['jack_of_diamonds']);
+        //  $result['players'][$player_id]['tricks_taken'] = 0;
+				//	$result['players'][$player_id]['tricks_need'] = 0;
+
+				}
 
         return $result;
     }
@@ -202,9 +204,8 @@ class HeartsTesting extends Table
     */
     function getGameProgression()
     {
-        // TODO: compute and return the game progression
-
-        return 0;
+				$round = self::getGameStateValue('round_number');
+        return $round * 10;
     }
 
 
@@ -446,11 +447,11 @@ class HeartsTesting extends Table
 
 					self::activeNextPlayer();
 					if ($num_non_bet == 0 && $passes == 3) {
-						self::notifyAllPlayers("bids", clienttranslate('${player_name} won the bid with ${value_displayed} ${color_displayed}'), array (
+						self::notifyAllPlayers("bid_won", clienttranslate('${player_name} won the bid with ${value_displayed} ${color_displayed}'), array (
 										'player_name' => self::getActivePlayerName(),
 										'value_displayed' => self::getGameStateValue( 'current_bid' ),
 										'color_displayed' => $this->colors [self::getGameStateValue( 'current_bid_shape' )] ['name'] ));
-						$this->gamestate->nextState('newTrick');
+						$this->gamestate->nextState('playerBet');
 					} else {
 						$this->gamestate->nextState('playerBid');
 					}
@@ -489,6 +490,25 @@ class HeartsTesting extends Table
 						$transition = 'nextBidder';
 		        $this->gamestate->nextState($transition);
 		    }
+
+				function playerBet($bet_value) {
+					$player_id = self::getActivePlayerId();
+
+					$sql = "UPDATE player SET tricks_need=$bet_value WHERE player_id='$player_id'";
+					self::DbQuery($sql);
+
+					self::notifyAllPlayers("playerBet", clienttranslate('${player_name} bet on taking ${value_displayed} tricks'), array (
+									'player_name' => self::getActivePlayerName(),
+									'player_id' => $player_id,
+									'value_displayed' => $bet_value));
+
+					$this->gamestate->nextState('nextBet');
+				}
+
+				function stNextBet() {
+					self::activeNextPlayer();
+					$this->gamestate->nextState('playerBet');
+				}
 
 				function getShapePower($shape) {
 					/*
@@ -555,6 +575,11 @@ class HeartsTesting extends Table
 
 								// Move all cards to "cardswon" of the given player
 		            $this->cards->moveAllCardsInLocation('cardsontable', 'cardswon', null, $best_value_player_id);
+
+
+								//save
+								$sql = "UPDATE player SET tricks_taken=tricks_taken+1 WHERE player_id='$best_value_player_id'";
+								self::DbQuery($sql);
 
 								// Notify
 		            // Note: we use 2 notifications here in order we can pause the display during the first notification

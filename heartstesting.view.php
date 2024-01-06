@@ -43,7 +43,8 @@ class view_heartstesting_heartstesting extends game_view
         /*********** Place your code below:  ************/
 
         $template = self::getGameName() . "_" . self::getGameName();
-        $this->tpl['SCORE_LABEL'] = self::_("Score:");
+        $this->tpl['TRICKS_LABEL'] = self::_("Tricks:");
+        $this->tpl['TRICKS_NEED_LABEL'] = self::_("Out Of:");
 
         $directions = array( 'S', 'W', 'N', 'E' );
 
