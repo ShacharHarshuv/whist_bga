@@ -16,16 +16,16 @@ $gameinfos = array(
 'game_name' => "Israeli Whist",
 
 // Game designer (or game designers, separated by commas)
-'designer' => 'Tom Golan',
+'designer' => '(Uncredited)',
 
 // Game artist (or game artists, separated by commas)
-'artist' => 'Tom Golan',
+'artist' => 'Dar Golan',
 
 // Year of FIRST publication of this game. Can be negative.
-'year' => 1850,
+'year' => '',
 
 // Game publisher (use empty string if there is no publisher)
-'publisher' => 'Public Domain',
+'publisher' => '(Public Domain)',
 
 // Url of game publisher website
 'publisher_website' => 'http://www.mypublishingcompany.com/',
@@ -34,8 +34,7 @@ $gameinfos = array(
 'publisher_bgg_id' => 171,
 
 // Board game geek ID of the game
-'bgg_id' => 100809,
-
+'bgg_id' => 65136,
 
 // Players configuration that can be played (ex: 2 to 4 players)
 'players' => array( 4 ),

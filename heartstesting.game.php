@@ -2,7 +2,7 @@
  /**
   *------
   * BGA framework: © Gregory Isabelli <gisabelli@boardgamearena.com> & Emmanuel Colin <ecolin@boardgamearena.com>
-  * HeartsTesting implementation : © <Your name here> <Your email address here>
+  * HeartsTesting implementation : © Tom Golan tomgolanx@gmail.com
   *
   * This code has been produced on the BGA studio platform for use on http://boardgamearena.com.
   * See http://en.boardgamearena.com/#!doc/Studio for more information.
@@ -47,6 +47,9 @@ class HeartsTesting extends Table
 												 "num_of_passes" => 14,
 												 "current_bid" => 15,
 												 "current_bid_shape" => 16,
+												 "current_bid_player_id" => 17,
+												 "total_round_bets" => 18,
+												 "num_of_bets" => 19,
                           ) );
 
         $this->cards = self::getNew( "module.common.deck" );
@@ -112,6 +115,12 @@ class HeartsTesting extends Table
 
 				self::setGameStateInitialValue( 'current_bid_shape', 0 );
 
+				self::setGameStateInitialValue( 'current_bid_player_id', 0 );
+
+				self::setGameStateInitialValue( 'total_round_bets', 0 );
+
+				self::setGameStateInitialValue( 'num_of_bets', 0 );
+
 				// Create cards
         $cards = array ();
         foreach ( $this->colors as $color_id => $color ) {
@@ -141,6 +150,7 @@ class HeartsTesting extends Table
         //self::initStat( 'player', 'player_teststat1', 0 );  // Init a player statistics (for all players)
 
         // TODO: setup the initial game situation here
+				$this->DbQuery("UPDATE player SET player_score = 0");
 
 
         // Activate first player (which is in general a good idea :) )
@@ -166,7 +176,7 @@ class HeartsTesting extends Table
 
         // Get information about players
         // Note: you can retrieve some extra field you added for "player" table in "dbmodel.sql" if you need it.
-        $sql = "SELECT player_id id, tricks_taken taken, tricks_need tricks FROM player ";
+        $sql = "SELECT player_id id, player_score score, tricks_taken taken, tricks_need tricks FROM player ";
         $result['players'] = self::getCollectionFromDb( $sql );
 
         // TODO: Gather all information about current game situation (visible by player $current_player_id).
@@ -179,9 +189,12 @@ class HeartsTesting extends Table
 
 				$result['round_number'] = self::getGameStateValue('round_number');
 
+				$result['round_trump'] = self::getGameStateValue('current_bid_shape');
+
 
         foreach ($result['players'] as $player_id => $players) {
 					self::dump( "player bet :", $result['players'][$player_id]['tricks']);
+					self::dump( "player score :", $result['players'][$player_id]['score']);
         	//$cardswon = $this->cards->getCardsInLocation('cardswon', $player_id);
         	//  foreach ($cardswon as $card) $score += $this->calculateCardPoints($card, $result['face_value_scoring'], $result['spades_scoring'], $result['jack_of_diamonds']);
         //  $result['players'][$player_id]['tricks_taken'] = 0;
@@ -376,8 +389,14 @@ class HeartsTesting extends Table
 		            // Notify player about his cards
 		            self::notifyPlayer($player_id, 'newHand', '', array ('cards' => $cards));
 		        }
-						// set trump color to 0 (= no color)
-		        self::setGameStateValue('trumpColor', 0);
+
+						// init globals
+						self::setGameStateValue( 'num_of_passes', 0 );
+						self::setGameStateValue( 'current_bid', 0 );
+						self::setGameStateValue( 'current_bid_shape', 0 );
+						self::setGameStateValue( 'current_bid_player_id', 0 );
+						self::setGameStateValue( 'total_round_bets', 0 );
+						self::setGameStateValue( 'num_of_bets', 0 );
 
 		        $this->gamestate->nextState("");
 		    }
@@ -407,46 +426,41 @@ class HeartsTesting extends Table
 
 
 				function stNextBidder() {
-					$active_player_id = self::getActivePlayerId();
+				//	$active_player_id = self::getActivePlayerId();
 
-					$best_bid_value = 0;
-					$best_value_player_id = null;
-					$num_passes = 0;
-					$num_non_bet = 0;
+					//$best_bid_value = 0;
+				//	$best_value_player_id = null;
 
-					$sqlPlayers = "SELECT player_id id, player_bid_value player_bid, player_name name FROM player ";
-
-					$result['players'] = self::getCollectionFromDb( $sqlPlayers );
-					$player_name = self::getActivePlayerName();
-
-					self::dump( "player bid:", $player_name);
-
-					foreach ($result['players'] as $player_id => $players) {
-						$current_bid = (int)$result['players'][$player_id]['player_bid'];
-						self::dump( "Current bid", $current_bid );
-
-						if ($current_bid == -1) { // no-bid
-							++$num_non_bet;
-							self::dump( "we are non bid:", $num_non_bet);
-						} else if ($current_bid == -2) { // pass
-							++$num_passes;
-							self::dump( "we are pass:", $num_passes);
-						} else if ($current_bid > $best_bid_value) { // check best bid
-							$best_bid_value = $current_bid;
-							$best_value_player_id = $player_id;
-							self::dump( "we are best bid:", $best_bid_value);
-						}
-					}
-
-					self::dump( "num_non_bet:", $num_non_bet);
-					self::dump( "num_passes:", $num_passes);
-					self::dump( "best_bid_value:", $best_bid_value);
+					// $sqlPlayers = "SELECT player_id id, player_bid_value player_bid, player_name name FROM player ";
+					//
+					// $result['players'] = self::getCollectionFromDb( $sqlPlayers );
+					// $player_name = self::getActivePlayerName();
+					//
+					// self::dump( "player bid:", $player_name);
+					//
+					// foreach ($result['players'] as $player_id => $players) {
+					// 	$current_bid = (int)$result['players'][$player_id]['player_bid'];
+					// 	self::dump( "Current bid", $current_bid );
+					//
+					// 	if ($current_bid == -1) { // no-bid
+					// 		++$num_non_bet;
+					// 		self::dump( "we are non bid:", $num_non_bet);
+					// 	} else if ($current_bid == -2) { // pass
+					// 		++$num_passes;
+					// 		self::dump( "we are pass:", $num_passes);
+					// 	} else if ($current_bid > $best_bid_value) { // check best bid
+					// 		$best_bid_value = $current_bid;
+					// 		$best_value_player_id = $player_id;
+					// 		self::dump( "we are best bid:", $best_bid_value);
+					// 	}
+					// }
 
 					$passes = self::getGameStateValue( 'num_of_passes' );
 					self::dump( "num_passes_global:", $passes);
 
 					self::activeNextPlayer();
-					if ($num_non_bet == 0 && $passes == 3) {
+
+					if ($passes == 3) {
 						self::notifyAllPlayers("bid_won", clienttranslate('${player_name} won the bid with ${value_displayed} ${color_displayed}'), array (
 										'player_name' => self::getActivePlayerName(),
 										'value_displayed' => self::getGameStateValue( 'current_bid' ),
@@ -460,6 +474,7 @@ class HeartsTesting extends Table
 				function playerBid($bid_value, $shape) {
 						$current_bid = self::getGameStateValue( 'current_bid' );
 						$current_bid_shape = self::getGameStateValue( 'current_bid_shape' );
+						$active_player_id = self::getActivePlayerId();
 
 						if ($bid_value < 5) {
 							throw new BgaVisibleSystemException(self::_("Bid value must be at lease 5"));
@@ -469,15 +484,16 @@ class HeartsTesting extends Table
 						if ($current_bid == 0 || $this->isNewWinningBid($bid_value, $shape, $current_bid, $current_bid_shape)) {
 							self::setGameStateValue('current_bid', $bid_value);
 							self::setGameStateValue('current_bid_shape', $shape);
+							self::setGameStateValue('current_bid_player_id', $active_player_id);
 							self::setGameStateValue('num_of_passes', 0);
 						} else {
 							throw new BgaVisibleSystemException(self::_("Bid is not strong enough"));
 						}
 
-						// Update bid in DB
-						$active_player_id = self::getActivePlayerId();
-						$sql = "UPDATE player SET player_bid_value=$bid_value WHERE player_id='$active_player_id'";
-						self::DbQuery($sql);
+						// // Update bid in DB
+						// $active_player_id = self::getActivePlayerId();
+						// $sql = "UPDATE player SET player_bid_value=$bid_value WHERE player_id='$active_player_id'";
+						// self::DbQuery($sql);
 
 						// And notify
 						self::notifyAllPlayers('playerBid', clienttranslate('${player_name} bids ${value_displayed} ${color_displayed}'), array (
@@ -493,6 +509,24 @@ class HeartsTesting extends Table
 
 				function playerBet($bet_value) {
 					$player_id = self::getActivePlayerId();
+					$current_bid_player_id = self::getGameStateValue( 'current_bid_player_id' );
+					$current_bid = self::getGameStateValue( 'current_bid' );
+
+					if ($player_id == $current_bid_player_id && $bet_value < $current_bid) {
+						throw new BgaVisibleSystemException(self::_("Bet cannot be smaller then bid value"));
+					}
+
+					$total_round_bets = self::getGameStateValue( 'total_round_bets' );
+					$num_of_bets = self::getGameStateValue( 'num_of_bets' );
+					$sum_bets = $total_round_bets + $bet_value;
+
+					if ($sum_bets == 13) {
+						throw new BgaVisibleSystemException(self::_("Total bets value cannot be exactly 13"));
+					}
+
+					$num_of_bets = $num_of_bets + 1;
+					self::setGameStateValue('total_round_bets', $sum_bets);
+					self::setGameStateValue('num_of_bets', $num_of_bets);
 
 					$sql = "UPDATE player SET tricks_need=$bet_value WHERE player_id='$player_id'";
 					self::DbQuery($sql);
@@ -507,7 +541,14 @@ class HeartsTesting extends Table
 
 				function stNextBet() {
 					self::activeNextPlayer();
-					$this->gamestate->nextState('playerBet');
+
+					$num_of_bets = self::getGameStateValue( 'num_of_bets' );
+
+					if ($num_of_bets == 4) {
+						$this->gamestate->nextState('newTrick');
+					} else {
+						$this->gamestate->nextState('playerBet');
+					}
 				}
 
 				function getShapePower($shape) {
@@ -548,7 +589,7 @@ class HeartsTesting extends Table
 		            $best_value = 0;
 		            $best_value_player_id = null;
 		            $currentTrickColor = self::getGameStateValue('trickColor');
-								$currentTrumpColor = self::getGameStateValue('trumpColor');
+								$currentTrumpColor = self::getGameStateValue('current_bid_shape');
 								$best_trump_player_id = null;
 								$best_trump = 0;
 
@@ -614,51 +655,83 @@ class HeartsTesting extends Table
 		    function stEndHand() {
 					// Count and score points, then end the game or go to the next hand.
 					$players = self::loadPlayersBasicInfos();
-					// Gets all "hearts" + queen of spades
 
-					$player_to_points = array ();
+					$isUnder = self::getGameStateValue( 'total_round_bets' ) < 13;
+
+					$sqlPlayers = "SELECT player_id id, tricks_taken tricks, tricks_need need, player_score points FROM player ";
+					$result['players'] = self::getCollectionFromDb( $sqlPlayers );
+
+					$scores = array();
+
 					foreach ( $players as $player_id => $player ) {
-							$player_to_points [$player_id] = 0;
-					}
-					$cards = $this->cards->getCardsInLocation("cardswon");
-					foreach ( $cards as $card ) {
-							$player_id = $card ['location_arg'];
-							// Note: 2 = heart
-							if ($card ['type'] == 2) {
-									$player_to_points [$player_id] ++;
+							$tricks_need = $result['players'][$player_id]['need'];
+							$tricks_taken = $result['players'][$player_id]['tricks'];
+							$player_points = $result['players'][$player_id]['points'];
+							$round_points = 0;
+
+							// success
+							if($tricks_need == $tricks_taken) {
+								if ($tricks_taken == 0) {
+									if ($isUnder == true) {
+										$round_points = 50;
+									} else {
+										$round_points = 25;
+									}
+								} else {
+									$round_points = ($tricks_taken * $tricks_taken) + 10;
+								}
+							} else { // fails
+								$diff = $tricks_need - $tricks_taken;
+								$round_points = abs($diff) * -10;
 							}
+
+							$sum_points = $round_points + $player_points;
+
+							self::dump( "player sum_points :", $sum_points);
+							$scores[$player_id] = $sum_points;
+
+							$sql = "UPDATE player SET player_score=$sum_points, tricks_taken=0, tricks_need=0 WHERE player_id='$player_id'";
+							self::DbQuery($sql);
+
+							self::notifyAllPlayers("newScores", clienttranslate('${player_name} took ${tricks} / ${need} tricks and received ${points} points'), array (
+											'player_id' => $player_id,'player_name' => $players [$player_id] ['player_name'],
+											'points' => $round_points,
+											'tricks' => $tricks_taken, 'need' => $tricks_need  ));
 					}
+
+					self::notifyAllPlayers( "points", '', array( 'scores' => $scores ) );
+
 					// Apply scores to player
-					foreach ( $player_to_points as $player_id => $points ) {
-							if ($points != 0) {
-									$sql = "UPDATE player SET player_score=player_score-$points  WHERE player_id='$player_id'";
-									self::DbQuery($sql);
-									$heart_number = $player_to_points [$player_id];
-									self::notifyAllPlayers("points", clienttranslate('${player_name} gets ${nbr} hearts and looses ${nbr} points'), array (
-													'player_id' => $player_id,'player_name' => $players [$player_id] ['player_name'],
-													'nbr' => $heart_number ));
-							} else {
-									// No point lost (just notify)
-									self::notifyAllPlayers("points", clienttranslate('${player_name} did not get any hearts'), array (
-													'player_id' => $player_id,'player_name' => $players [$player_id] ['player_name'] ));
-							}
-					}
-					$newScores = self::getCollectionFromDb("SELECT player_id, player_score FROM player", true );
-					self::notifyAllPlayers( "newScores", '', array( 'newScores' => $newScores ) );
+					// foreach ( $player_to_points as $player_id => $points ) {
+					// 		if ($points != 0) {
+					// 				$sql = "UPDATE player SET player_score=player_score-$points,tricks_taken=0, tricks_need=0 WHERE player_id='$player_id'";
+					// 				self::DbQuery($sql);
+					//
+					// 				$heart_number = $player_to_points [$player_id];
+					// 				self::notifyAllPlayers("points", clienttranslate('${player_name} gets ${nbr} hearts and looses ${nbr} points'), array (
+					// 								'player_id' => $player_id,'player_name' => $players [$player_id] ['player_name'],
+					// 								'nbr' => $heart_number ));
+					// 		} else {
+					// 				// No point lost (just notify)
+					// 				self::notifyAllPlayers("points", clienttranslate('${player_name} did not get any hearts'), array (
+					// 								'player_id' => $player_id,'player_name' => $players [$player_id] ['player_name'] ));
+					// 		}
+					// }
+
+				//	$newScores = self::getCollectionFromDb("SELECT player_id, player_score FROM player", true );
+				//	self::notifyAllPlayers( "newScores", '', array( 'newScores' => $newScores ) );
 
 					// increase round number
 					$round = self::getGameStateValue( 'round_number' ) ;
 					$round = $round + 1;
 					self::setGameStateValue('round_number', $round);
-					self::notifyAllPlayers( "newRound", '', array( 'round_number' => $round ) );
+					self::notifyAllPlayers( "newRound", '', array( 'round_number' => $round, 'scores' => $scores ) );
 
-					///// Test if this is the end of the game
-					foreach ( $newScores as $player_id => $score ) {
-							if ($score <= -100) {
-									// Trigger the end of the game !
-									$this->gamestate->nextState("endGame");
-									return;
-							}
+					///// check if this is the end of the game
+					if ($round == 3) {
+							// Trigger the end of the game !
+							$this->gamestate->nextState("endGame");
+							return;
 					}
 
 					$this->gamestate->nextState("nextHand");

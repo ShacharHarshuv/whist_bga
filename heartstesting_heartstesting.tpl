@@ -3,7 +3,7 @@
 <!--
 --------
 -- BGA framework: © Gregory Isabelli <gisabelli@boardgamearena.com> & Emmanuel Colin <ecolin@boardgamearena.com>
--- HeartsTesting implementation : © <Your name here> <Your email address here>
+-- HeartsTesting implementation : © Tom Golan tomgolanx@gmail.com
 --
 -- This code has been produced on the BGA studio platform for use on http://boardgamearena.com.
 -- See http://en.boardgamearena.com/#!doc/Studio for more information.
@@ -39,8 +39,8 @@
   </div>
 
   <div id="roundInfo" style="margin: 10px auto;>
-    <div id="roundtrump">{ROUND_TRUMP}<span id="round_trump_name"></span></div>
     <div id="roundNumber">{ROUND}<span id="round"></span></div>
+    <div id="roundtrump">{ROUND_TRUMP}<span id="round_trump_name"></span></div>
   </div>
 
   <div id="bidInfo">

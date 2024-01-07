@@ -1,7 +1,7 @@
 /**
  *------
  * BGA framework: © Gregory Isabelli <gisabelli@boardgamearena.com> & Emmanuel Colin <ecolin@boardgamearena.com>
- * HeartsTesting implementation : © <Your name here> <Your email address here>
+ * HeartsTesting implementation : © Tom Golan tomgolanx@gmail.com
  *
  * This code has been produced on the BGA studio platform for use on http://boardgamearena.com.
  * See http://en.boardgamearena.com/#!doc/Studio for more information.
@@ -76,9 +76,9 @@ function (dojo, declare) {
 
             this.round = new ebg.counter();
             this.round.create($('round'));
-            this.round.setValue(gamedatas.round_number)
+            this.round.setValue(gamedatas.round_number);
 
-            $('round_trump_name').textContent = "Spade"
+            $('round_trump_name').textContent = this.getTrumpName(gamedatas.round_trump);
 
             // Create cards types:
             for (var color = 1; color <= 4; color++) {
@@ -106,15 +106,12 @@ function (dojo, declare) {
                 this.playCardOnTable(player_id, color, value, card.id);
             }
 
-
-
             dojo.connect( this.playerHand, 'onChangeSelection', this, 'onPlayerHandSelectionChanged' );
             // Setup game notifications to handle (see "setupNotifications" method below)
             this.setupNotifications();
 
             console.log( "Ending game setup" );
         },
-
 
         ///////////////////////////////////////////////////
         //// Game & client states
@@ -143,6 +140,14 @@ function (dojo, declare) {
                 dojo.style( 'bidInfo', 'display', 'none' );
            break;
 
+           case 'playerBid':
+                dojo.style( 'bidInfo', 'display', 'block' );
+                dojo.style( 'shape', 'display', 'block' );
+           break;
+
+           case 'playerBet':
+                dojo.style( 'shape', 'display', 'none' );
+           break;
 
             case 'dummmy':
                 break;
@@ -267,6 +272,21 @@ function (dojo, declare) {
             return (color - 1) * 13 + (value - 2);
         },
 
+        getTrumpName : function(shapeId) {
+          if(shapeId == 1) {
+            return "Spade";
+          }
+          if(shapeId == 2) {
+            return "Heart";
+          }
+          if(shapeId == 3) {
+            return "Club";
+          }
+          if(shapeId == 4) {
+            return "Diamond";
+          }
+        },
+
         playCardOnTable : function(player_id, color, value, card_id) {
             // player_id => direction
             dojo.place(this.format_block('jstpl_cardontable', {
@@ -388,11 +408,12 @@ function (dojo, declare) {
             dojo.subscribe( 'trickWin', this, "notif_trickWin" );
             this.notifqueue.setSynchronous( 'trickWin', 1000 );
             dojo.subscribe( 'giveAllCardsToPlayer', this, "notif_giveAllCardsToPlayer" );
-            dojo.subscribe( 'newScores', this, "notif_newScores" );
+            dojo.subscribe( 'points', this, "notif_points" );
             dojo.subscribe( 'newRound', this, "notif_newRound" );
+            dojo.subscribe( 'playerBid', this, "notif_playerBid" );
             dojo.subscribe( 'playerBet', this, "notif_playerBet" );
-
             dojo.subscribe('pass', this, "notif_pass");
+
             // TODO: here, associate your game notifications with local methods
 
             // Example 1: standard notification handling
@@ -431,6 +452,7 @@ function (dojo, declare) {
             // We do nothing here (just wait in order players can view the 4 cards played before they're gone.
             this.tricks_counter[notif.args.player_id].incValue(1);
         },
+
         notif_giveAllCardsToPlayer : function(notif) {
             // Move all cards on table to given table, then destroy them
             var winner_id = notif.args.player_id;
@@ -443,22 +465,30 @@ function (dojo, declare) {
             }
         },
 
-        notif_newScores : function(notif) {
+        notif_points : function(notif) {
            // Update players' scores
-           for ( var player_id in notif.args.newScores) {
-               this.scoreCtrl[player_id].toValue(notif.args.newScores[player_id]);
+           for ( var player_id in notif.args.scores) {
+             this.scoreCtrl[player_id].toValue(notif.args.scores[player_id]);
            }
        },
 
        notif_newRound : function(notif) {
           // Update round' number
           this.round.setValue(notif.args.round_number);
+
+          for ( var player_id in notif.args.scores) {
+            this.tricks_need_counter[player_id].setValue(0);
+            this.tricks_counter[player_id].setValue(0);
+          }
       },
 
         notif_playerBet : function(notif) {
-           // Update round' number
            this.tricks_need_counter[notif.args.player_id].setValue(notif.args.value_displayed);
        },
+
+       notif_playerBid : function(notif) {
+          $('round_trump_name').textContent = notif.args.color_displayed;
+        },
 
         // TODO: from this point and below, you can write your game notifications handling methods
 
