@@ -70,8 +70,8 @@
 /** Table layout **/
 
 #game_board_wrap {
-    display: flex;
-    flex-direction: row;
+    display: inline-block;
+    flex-direction: column;
     justify-content: space-evenly;
 }
 
@@ -83,6 +83,10 @@
     margin: auto 5px auto auto;
 }
 
+#myhand_wrap {
+  margin-top: 55px;
+}
+
 .playertablename {
     font-weight: bold;
 }
@@ -91,26 +95,26 @@
     position: absolute;
     text-align: center;
     width: 180px;
-    height: 150px;
+    height: 130px;
 }
 
 .playertable_N {
-    left: 50%;
+    left: 60%;
     top: 0px;
     margin-left: -90px; /* half of 180 */
 }
 .playertable_S {
-    left: 50%;
-    bottom: 0px;
+    left: 60%;
+    bottom: -100px;
     margin-left: -90px; /* half of 180 */
 }
 .playertable_W {
-    left: 0px;
+    left: -20px;
     top: 50%;
     margin-top: -55px; /* half of 130 */
 }
 .playertable_E {
-    right: 0px;
+    right: -100px;
     top: 50%;
     margin-top: -55px; /* half of 130 */
 }
@@ -118,7 +122,7 @@
 .playertablecard {
     display: inline-block;
     position: relative;
-    margin-top: 5px;
+    margin-top: 0px;
     width: 72px;
     height: 96px;
 }
@@ -133,13 +137,13 @@
 }
 
 #roundInfo {
-    width: min-content;
-    text-align: center;
-    margin: auto auto auto 5px;
+  width: max-content;
+  margin-top: 100px;
 }
 
 #bidInfo {
-  display: inline-block;
-    top: 20%;
-    left: 50%;
+  display: flex;
+  margin-top: 5px;
+  top: 50%;
+  left: 50%;
 }

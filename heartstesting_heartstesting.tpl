@@ -38,7 +38,7 @@
       <!-- END playerhandblock -->
   </div>
 
-  <div id="roundInfo" style="margin: 10px auto;>
+  <div id="roundInfo">
     <div id="roundNumber">{ROUND}<span id="round"></span></div>
     <div id="roundtrump">{ROUND_TRUMP}<span id="round_trump_name"></span></div>
   </div>
