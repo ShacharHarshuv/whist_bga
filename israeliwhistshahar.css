@@ -1,15 +1,15 @@
 /**
  *------
  * BGA framework: © Gregory Isabelli <gisabelli@boardgamearena.com> & Emmanuel Colin <ecolin@boardgamearena.com>
- * HeartsTesting implementation : © Tom Golan tomgolanx@gmail.com
+ * IsraeliWhistShahar implementation : © Tom Golan tomgolanx@gmail.com
  *
  * This code has been produced on the BGA studio platform for use on http://boardgamearena.com.
  * See http://en.boardgamearena.com/#!doc/Studio for more information.
  * -----
  *
- * heartstesting.css
+ * israeliwhistshahar.css
  *
- * HeartsTesting stylesheet
+ * IsraeliWhistShahar stylesheet
  *
  */
 
@@ -17,8 +17,8 @@
     This is the CSS stylesheet of your game User Interface.
 
     Styles defined on this file will be applied to the HTML elements you define in your
-    HTML template (heartstesting_heartstesting.tpl), and to HTML elements you create dynamically
-    (in heartstesting.js).
+    HTML template (israeliwhistshahar_israeliwhistshahar.tpl), and to HTML elements you create dynamically
+    (in israeliwhistshahar.js).
 
     Usually, you are using CSS to:
 
@@ -42,12 +42,9 @@
            Consequently, don't hesitate to put as many comments as necessary.
 */
 
-
 /* Note: you must not use any @import directive */
 
-
 /********* You can start writing your CSS below this line: **********/
-
 
 /*
     Example of CSS sprites (a black token and a white token, 20x20px each, embedded in the same "tokens.png" 40x20px image):
@@ -70,17 +67,17 @@
 /** Table layout **/
 
 #game_board_wrap {
-    display: inline-block;
-    flex-direction: column;
-    justify-content: space-evenly;
+  display: inline-block;
+  flex-direction: column;
+  justify-content: space-evenly;
 }
 
 #playertables {
-    position: relative;
-    width: 400px;
-    height: 335px;
-    text-align: center;
-    margin: auto 5px auto auto;
+  position: relative;
+  width: 400px;
+  height: 335px;
+  text-align: center;
+  margin: auto 5px auto auto;
 }
 
 #myhand_wrap {
@@ -88,52 +85,52 @@
 }
 
 .playertablename {
-    font-weight: bold;
+  font-weight: bold;
 }
 
 .playertable {
-    position: absolute;
-    text-align: center;
-    width: 180px;
-    height: 130px;
+  position: absolute;
+  text-align: center;
+  width: 180px;
+  height: 130px;
 }
 
 .playertable_N {
-    left: 60%;
-    top: 0px;
-    margin-left: -90px; /* half of 180 */
+  left: 60%;
+  top: 0px;
+  margin-left: -90px; /* half of 180 */
 }
 .playertable_S {
-    left: 60%;
-    bottom: -100px;
-    margin-left: -90px; /* half of 180 */
+  left: 60%;
+  bottom: -100px;
+  margin-left: -90px; /* half of 180 */
 }
 .playertable_W {
-    left: -20px;
-    top: 50%;
-    margin-top: -55px; /* half of 130 */
+  left: -20px;
+  top: 50%;
+  margin-top: -55px; /* half of 130 */
 }
 .playertable_E {
-    right: -100px;
-    top: 50%;
-    margin-top: -55px; /* half of 130 */
+  right: -100px;
+  top: 50%;
+  margin-top: -55px; /* half of 130 */
 }
 
 .playertablecard {
-    display: inline-block;
-    position: relative;
-    margin-top: 0px;
-    width: 72px;
-    height: 96px;
+  display: inline-block;
+  position: relative;
+  margin-top: 0px;
+  width: 72px;
+  height: 96px;
 }
 
 /*** cards on table ***/
 
 .cardontable {
-    position: absolute;
-    width: 72px;
-    height: 96px;
-    background-image: url('img/cards.jpg');
+  position: absolute;
+  width: 72px;
+  height: 96px;
+  background-image: url("img/cards.jpg");
 }
 
 #roundInfo {

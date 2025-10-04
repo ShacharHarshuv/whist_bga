@@ -2,13 +2,13 @@
 /**
  *------
  * BGA framework: © Gregory Isabelli <gisabelli@boardgamearena.com> & Emmanuel Colin <ecolin@boardgamearena.com>
- * HeartsTesting implementation : © Tom Golan tomgolanx@gmail.com
+ * IsraeliWhistShahar implementation : © Tom Golan tomgolanx@gmail.com
  *
  * This code has been produced on the BGA studio platform for use on http://boardgamearena.com.
  * See http://en.boardgamearena.com/#!doc/Studio for more information.
  * -----
  *
- * heartstesting.view.php
+ * israeliwhistshahar.view.php
  *
  * This is your "view" file.
  *
@@ -17,7 +17,7 @@
  * _ when a player refreshes the game page (F5)
  *
  * "build_page" method allows you to dynamically modify the HTML generated for the game interface. In
- * particular, you can set here the values of variables elements defined in heartstesting_heartstesting.tpl (elements
+ * particular, you can set here the values of variables elements defined in israeliwhistshahar_israeliwhistshahar.tpl (elements
  * like {MY_VARIABLE_ELEMENT}), and insert HTML block elements (also defined in your HTML template file)
  *
  * Note: if the HTML of your game interface is always the same, you don't have to place anything here.
@@ -26,12 +26,12 @@
 
 require_once( APP_BASE_PATH."view/common/game.view.php" );
 
-class view_heartstesting_heartstesting extends game_view
+class view_israeliwhistshahar_israeliwhistshahar extends game_view
 {
     protected function getGameName()
     {
         // Used for translations and stuff. Please do not modify.
-        return "heartstesting";
+        return "israeliwhistshahar";
     }
 
   	function build_page( $viewArgs )
@@ -86,7 +86,7 @@ class view_heartstesting_heartstesting extends game_view
         //      <!-- END myblock -->
 
 
-        $this->page->begin_block( "heartstesting_heartstesting", "myblock" );
+        $this->page->begin_block( "israeliwhistshahar_israeliwhistshahar", "myblock" );
         foreach( $players as $player )
         {
             $this->page->insert_block( "myblock", array(
