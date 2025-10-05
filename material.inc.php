@@ -1,4 +1,7 @@
 <?php
+
+// TODO: should we delete this file?
+
 /**
  *------
  * BGA framework: © Gregory Isabelli <gisabelli@boardgamearena.com> & Emmanuel Colin <ecolin@boardgamearena.com>

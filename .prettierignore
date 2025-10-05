@@ -1,0 +1,38 @@
+# Dependencies
+node_modules/
+package-lock.json
+
+# Build outputs
+dist/
+build/
+
+# BGA specific files that shouldn't be formatted
+dbmodel.sql
+material.inc.php
+gameinfos.inc.php
+gameoptions.json
+gamepreferences.json
+stats.inc.php
+version.php
+_ide_helper.php
+
+# IDE and config files
+.vscode/
+.gitignore
+.prettierignore
+
+# Image and binary files
+*.jpg
+*.jpeg
+*.png
+*.gif
+*.svg
+*.ico
+*.pdf
+
+# Documentation
+README*
+LICENCE*
+
+# Misc folder (typically contains BGA framework files)
+misc/

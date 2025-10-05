@@ -21,43 +21,37 @@
  *
  */
 
-
-  class action_israeliwhistshahar extends APP_GameAction
-  {
+class action_israeliwhistshahar extends APP_GameAction {
     // Constructor: please do not modify
-   	public function __default()
-  	{
-  	    if( self::isArg( 'notifwindow') )
-  	    {
-            $this->view = "common_notifwindow";
-  	        $this->viewArgs['table'] = self::getArg( "table", AT_posint, true );
-  	    }
-  	    else
-  	    {
-            $this->view = "israeliwhistshahar_israeliwhistshahar";
-            self::trace( "Complete reinitialization of board game" );
-      }
-  	}
+    public function __default() {
+        if (self::isArg('notifwindow')) {
+            $this->view = 'common_notifwindow';
+            $this->viewArgs['table'] = self::getArg('table', AT_posint, true);
+        } else {
+            $this->view = 'israeliwhistshahar_israeliwhistshahar';
+            self::trace('Complete reinitialization of board game');
+        }
+    }
 
-  	// TODO: defines your action entry points there
+    // TODO: defines your action entry points there
 
     public function pass() {
-      self::setAjaxMode();
-      $this->game->pass();
-      self::ajaxResponse();
+        self::setAjaxMode();
+        $this->game->pass();
+        self::ajaxResponse();
     }
 
     public function playCard() {
-      self::setAjaxMode();
-      $card_id = self::getArg("id", AT_posint, true);
-      $this->game->playCard($card_id);
-      self::ajaxResponse();
+        self::setAjaxMode();
+        $card_id = self::getArg('id', AT_posint, true);
+        $this->game->playCard($card_id);
+        self::ajaxResponse();
     }
 
     public function bid() {
         self::setAjaxMode();
-        $bidValue = self::getArg("bid_value", AT_posint, true);
-        $shape = self::getArg("shape", AT_posint, true);
+        $bidValue = self::getArg('bid_value', AT_posint, true);
+        $shape = self::getArg('shape', AT_posint, true);
 
         $this->game->playerBid($bidValue, $shape);
         self::ajaxResponse();
@@ -65,12 +59,11 @@
 
     public function bet() {
         self::setAjaxMode();
-        $bidValue = self::getArg("bid_value", AT_posint, true);
+        $bidValue = self::getArg('bid_value', AT_posint, true);
 
         $this->game->playerBet($bidValue);
         self::ajaxResponse();
     }
-
 
     /*
 
@@ -92,5 +85,4 @@
     }
 
     */
-
-  }
+}
