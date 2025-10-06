@@ -6,8 +6,6 @@ namespace Bga\Games\israeliwhistshahar\States;
 
 use Bga\GameFramework\StateType;
 use Bga\Games\israeliwhistshahar\Game;
-// todo: do we need these imports? In the tutorial it worked without them
-use Bga\Games\israeliwhistshahar\States\NewHand;
 
 class EndHand extends \Bga\GameFramework\States\GameState
 {

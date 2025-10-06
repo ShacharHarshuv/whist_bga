@@ -45,6 +45,12 @@ class PlayerBid extends \Bga\GameFramework\States\GameState
     #[PossibleAction]
     public function bid(int $value, int $suit)
     {
-        throw new \BgaUserException("Not implemented: bid");
+        throw new \BgaUserException(
+            "Not implemented: bid with value ${value} and suit ${suit}",
+            args: [
+                "value" => $value,
+                "suit" => $suit,
+            ]
+        );
     }
 }

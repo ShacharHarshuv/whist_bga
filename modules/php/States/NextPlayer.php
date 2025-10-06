@@ -6,9 +6,6 @@ namespace Bga\Games\israeliwhistshahar\States;
 
 use Bga\GameFramework\StateType;
 use Bga\Games\israeliwhistshahar\Game;
-use Bga\Games\israeliwhistshahar\States\EndHand;
-use Bga\Games\israeliwhistshahar\States\NextTrick;
-use Bga\Games\israeliwhistshahar\States\PlayerTurn;
 
 class NextPlayer extends \Bga\GameFramework\States\GameState
 {

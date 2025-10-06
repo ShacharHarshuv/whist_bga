@@ -6,8 +6,6 @@ namespace Bga\Games\israeliwhistshahar\States;
 
 use Bga\GameFramework\StateType;
 use Bga\Games\israeliwhistshahar\Game;
-use Bga\Games\israeliwhistshahar\States\NewTrick;
-use Bga\Games\israeliwhistshahar\States\PlayerBet;
 
 class NextBet extends \Bga\GameFramework\States\GameState
 {
