@@ -43,22 +43,10 @@ class Game extends \Bga\GameFramework\Table
 
         // Initialize suits and values
         $this->suits = [
-            1 => [
-                "name" => clienttranslate("spade"),
-                "nametr" => self::_("spade"),
-            ],
-            2 => [
-                "name" => clienttranslate("heart"),
-                "nametr" => self::_("heart"),
-            ],
-            3 => [
-                "name" => clienttranslate("club"),
-                "nametr" => self::_("club"),
-            ],
-            4 => [
-                "name" => clienttranslate("diamond"),
-                "nametr" => self::_("diamond"),
-            ],
+            1 => "spade",
+            2 => "heart",
+            3 => "club",
+            4 => "diamond",
         ];
 
         $this->values_label = [
@@ -381,7 +369,9 @@ class Game extends \Bga\GameFramework\Table
                 "value_displayed" =>
                     $this->values_label[$currentCard["type_arg"]],
                 "color" => $currentCard["type"],
-                "color_displayed" => $this->suits[$currentCard["type"]]["name"],
+                "color_displayed" => clienttranslate(
+                    $this->suits[$currentCard["type"]]
+                ),
             ]
         );
         return NextPlayer::class;
@@ -452,7 +442,7 @@ class Game extends \Bga\GameFramework\Table
                 "player_id" => $active_player_id,
                 "player_name" => self::getActivePlayerName(),
                 "value_displayed" => $bid_value,
-                "color_displayed" => $this->suits[$shape]["name"],
+                "color_displayed" => clienttranslate($this->suits[$shape]),
             ]
         );
 

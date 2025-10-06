@@ -32,10 +32,11 @@ class NextBidder extends \Bga\GameFramework\States\GameState
                     "value_displayed" => $this->game->getGameStateValue(
                         "currentBidValue"
                     ),
-                    "color_displayed" =>
+                    "color_displayed" => $this->game->_(
                         $this->game->suits[
                             $this->game->getGameStateValue("currentBidSuit")
-                        ]["name"],
+                        ]
+                    ),
                 ]
             );
             return PlayerBet::class;
