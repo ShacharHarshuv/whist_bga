@@ -19,19 +19,31 @@ class PlayerBid extends \Bga\GameFramework\States\GameState
             description: clienttranslate(
                 '${actplayer} must make a bid or pass'
             ),
-            descriptionMyTurn: clienttranslate('${you} must make a bid or pass')
+            descriptionMyTurn: clienttranslate(
+                '${you} must make a bid or pass ${currentBidDisplay}'
+            )
         );
     }
 
     public function zombie(int $playerId)
     {
-        // We must implement this so BGA can auto play in the case a player becomes a zombie, but for this tutorial we won't handle this case
-        throw new \BgaUserException(
-            'Not implemented: zombie for player ${player_id}',
-            args: [
-                "player_id" => $playerId,
-            ]
-        );
+        $this->actPass($playerId);
+    }
+
+    public function getArgs(): array
+    {
+        $currentBidValue = $this->game->getGameStateValue("currentBidValue");
+        $currentBidSuit = $this->game->getGameStateValue("currentBidSuit");
+
+        return [
+            "currentBidDisplay" =>
+                $currentBidValue == 0
+                    ? ""
+                    : "(Current bid: " .
+                        $this->game->values_label[$currentBidValue] . // todo: we need to reuse this?
+                        $this->game->suits[$currentBidSuit]["emoji"] .
+                        ")",
+        ];
     }
 
     // TODO: check if the logic is implemented in Game.php and move it here
@@ -51,7 +63,6 @@ class PlayerBid extends \Bga\GameFramework\States\GameState
             "playerPass",
             clienttranslate('${player_name} passes'),
             [
-                "player_id" => $activePlayerId,
                 "player_name" => $this->game->getPlayerNameById(
                     $activePlayerId
                 ),
