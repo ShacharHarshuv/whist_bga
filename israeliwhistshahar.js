@@ -178,10 +178,10 @@ define([
     //         <input type="number" id="bid_value" min="5" max="13" value="5">
     //         <label for="bid_shape">Shape:</label>
     //         <select id="bid_shape">
-    //           <option value="1">Spades</option>
-    //           <option value="2">Hearts</option>
-    //           <option value="4">Diamonds</option>
-    //           <option value="3">Clubs</option>
+    //           <option value="1">Clubs</option>
+    //           <option value="2">Diamonds</option>
+    //           <option value="3">Hearts</option>
+    //           <option value="4">Spades</option>
     //         </select>
     //       </div>
     //     </div>
@@ -386,16 +386,16 @@ define([
 
     getTrumpName: function (shapeId) {
       if (shapeId == 1) {
-        return "Spade";
-      }
-      if (shapeId == 2) {
-        return "Heart";
-      }
-      if (shapeId == 3) {
         return "Club";
       }
-      if (shapeId == 4) {
+      if (shapeId == 2) {
         return "Diamond";
+      }
+      if (shapeId == 3) {
+        return "Heart";
+      }
+      if (shapeId == 4) {
+        return "Spade";
       }
     },
 
@@ -404,7 +404,7 @@ define([
       dojo.place(
         this.format_block("jstpl_cardontable", {
           x: cardwidth * (value - 2),
-          y: cardheight * (color - 1),
+          y: cardheight * (getSpriteSheetSuitIndex(color) - 1),
           player_id: player_id,
         }),
         "playertablecard_" + player_id,
@@ -751,7 +751,24 @@ function createPlayerHand(page, hand) {
  * @param {number} value - from 2 to 14 (Ace)
  */
 function cardId(suit, value) {
-  return (suit - 1) * 13 + (value - 2);
+  return (getSpriteSheetSuitIndex(suit) - 1) * 13 + (value - 2);
+}
+
+/**
+ * Convert logical suit number to sprite sheet suit index
+ * Logical: 1=Clubs, 2=Diamonds, 3=Hearts, 4=Spades
+ * Sprite sheet: 1=Spades, 2=Hearts, 3=Diamonds, 4=Clubs
+ * @param {number} logicalSuit - from 1 to 4
+ * @returns {number} sprite sheet suit index from 1 to 4
+ */
+function getSpriteSheetSuitIndex(logicalSuit) {
+  const mapping = {
+    1: 4, // Clubs -> position 4 in sprite sheet
+    2: 3, // Diamonds -> position 3 in sprite sheet
+    3: 2, // Hearts -> position 2 in sprite sheet
+    4: 1, // Spades -> position 1 in sprite sheet
+  };
+  return mapping[logicalSuit];
 }
 
 const cardwidth = 72;

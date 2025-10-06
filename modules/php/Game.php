@@ -11,10 +11,10 @@ use Bga\Games\israeliwhistshahar\States\NextBet;
 use Bga\Games\israeliwhistshahar\States\ZombiePass;
 
 /*
- 1 = Spades
- 2 = Hearts
- 3 = Clubs
- 4 = Diamonds
+ 1 = Clubs (weakest)
+ 2 = Diamonds
+ 3 = Hearts
+ 4 = Spades (strongest)
 */
 
 class Game extends \Bga\GameFramework\Table
@@ -43,10 +43,10 @@ class Game extends \Bga\GameFramework\Table
 
         // Initialize suits and values
         $this->suits = [
-            1 => "spade",
-            2 => "heart",
-            3 => "club",
-            4 => "diamond",
+            1 => "club",
+            2 => "diamond",
+            3 => "heart",
+            4 => "spade",
         ];
 
         $this->values_label = [
@@ -288,41 +288,13 @@ class Game extends \Bga\GameFramework\Table
         }
     }
 
-    function getShapePower($shape)
-    {
-        /*
-         1 = Spades => 4
-         2 = Hearts => 3
-         3 = Clubs => 1
-         4 = Diamonds => 2
-        */
-        if ($shape == 1) {
-            // Spade
-            return 4;
-        }
-        if ($shape == 2) {
-            // Heart
-            return 3;
-        }
-        if ($shape == 3) {
-            // Club
-            return 1;
-        }
-        if ($shape == 4) {
-            // Diamond
-            return 2;
-        }
-    }
-
     function isNewWinningBid(
         $bid_value,
         $shape,
         $currentBidValue,
         $currentBidSuit
     ) {
-        $better_shape =
-            $this->getShapePower($shape) >
-            $this->getShapePower($currentBidSuit);
+        $better_shape = $shape > $currentBidSuit;
         $better_value = $bid_value > $currentBidValue;
         $same_value = $bid_value == $currentBidValue;
 
