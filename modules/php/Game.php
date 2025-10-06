@@ -263,6 +263,7 @@ class Game extends \Bga\GameFramework\Table
         return $this->values_label[$value] . $this->suits[$suit]["emoji"];
     }
 
+    // todo: should we move this to the state?
     function checkPlayableCards($player_id): array
     {
         // Get all data needed to check playable cards at the moment
@@ -302,54 +303,6 @@ class Game extends \Bga\GameFramework\Table
                 return $all_ids;
             } // If not, may play any card...
         }
-    }
-
-    //////////////////////////////////////////////////////////////////////////////
-    //////////// Player actions
-    ////////////
-
-    function playCard($card_id)
-    {
-        self::checkAction("playCard");
-        $player_id = self::getActivePlayerId();
-
-        // Check whether the selected card can be played or not
-        $playable_cards = $this->checkPlayableCards($player_id);
-        if (!in_array($card_id, $playable_cards)) {
-            throw new \BgaVisibleSystemException(
-                self::_("You must play a card with the same suit")
-            );
-        }
-
-        $this->deck->moveCard($card_id, "cardsontable", $player_id);
-        $currentCard = $this->deck->getCard($card_id);
-
-        $currenttrickSuit = self::getGameStateValue("trickSuit");
-        if ($currenttrickSuit == 0) {
-            self::setGameStateValue("trickSuit", $currentCard["type"]);
-        }
-
-        // And notify
-        self::notifyAllPlayers(
-            "playCard",
-            clienttranslate(
-                '${player_name} plays ${value_displayed} ${color_displayed}'
-            ),
-            [
-                "i18n" => ["color_displayed", "value_displayed"],
-                "card_id" => $card_id,
-                "player_id" => $player_id,
-                "player_name" => self::getActivePlayerName(),
-                "value" => $currentCard["type_arg"],
-                "value_displayed" =>
-                    $this->values_label[$currentCard["type_arg"]],
-                "color" => $currentCard["type"],
-                "color_displayed" => clienttranslate(
-                    $this->suits[$currentCard["type"]]["name"]
-                ),
-            ]
-        );
-        return NextPlayer::class;
     }
 
     //////////////////////////////////////////////////////////////////////////////

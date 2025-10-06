@@ -274,35 +274,20 @@ define([
 
     // todo: this should be rewritten (use bgaPerformAction instead of ajax)
     onPlayerHandSelectionChanged: function () {
-      const items = this.playerHand.getSelectedItems();
+      const items = playerHand.getSelectedItems();
 
       if (items.length > 0) {
-        const action = "playCard";
-        if (this.checkAction(action, true)) {
+        const canPlay = true; // todo: check if the card can be played
+        if (canPlay) {
           // Can play a card
-          const card_id = items[0].id;
-          this.ajaxcall(
-            "/" +
-              this.game_name +
-              "/" +
-              this.game_name +
-              "/" +
-              action +
-              ".html",
-            {
-              id: card_id,
-              lock: true,
-            },
-            this,
-            function (result) {},
-            function (is_error) {},
-          );
+          const cardId = items[0].id;
+          this.bgaPerformAction("actPlayCard", { cardId });
 
-          this.playerHand.unselectAll();
-        } else if (this.checkAction("giveCards")) {
-          // Can give cards => let the player select some cards
-        } else {
-          this.playerHand.unselectAll();
+          playerHand.unselectAll();
+        } /*  else if () {
+          // TODO: implement giving cards in Frisch
+        } */ else {
+          playerHand.unselectAll();
         }
       }
     },
@@ -322,6 +307,7 @@ define([
     setupNotifications: function () {
       this.bgaSetupPromiseNotifications();
       this.notifqueue.setSynchronous("trickWin", 1000);
+      this.notifqueue.setSynchronous("playCard", 500);
     },
 
     notif_newHand: function (notif) {
@@ -493,6 +479,13 @@ function createPlayerHand(page, hand) {
     const value = +card.type_arg;
     playerHand.addToStockWithId(cardId(suit, value), card.id);
   }
+
+  dojo.connect(
+    playerHand,
+    "onChangeSelection",
+    page,
+    "onPlayerHandSelectionChanged",
+  );
 
   return playerHand;
 }
