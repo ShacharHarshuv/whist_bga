@@ -1,17 +1,17 @@
 {
-    "name": "whist-bga",
-    "version": "1.0.0",
-    "description": "Israeli Whist game for Board Game Arena",
-    "private": true,
-    "scripts": {
-        "format": "prettier --write .",
-        "format:check": "prettier --check .",
-        "format:php": "prettier --write \"**/*.php\"",
-        "format:js": "prettier --write \"**/*.js\"",
-        "format:css": "prettier --write \"**/*.css\""
-    },
-    "devDependencies": {
-        "prettier": "^3.0.0",
-        "@prettier/plugin-php": "^0.22.0"
-    }
+  "name": "whist-bga",
+  "version": "1.0.0",
+  "description": "Israeli Whist game for Board Game Arena",
+  "private": true,
+  "scripts": {
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
+    "format:php": "prettier --write \"**/*.php\"",
+    "format:js": "prettier --write \"**/*.js\"",
+    "format:css": "prettier --write \"**/*.css\""
+  },
+  "devDependencies": {
+    "prettier": "^3.0.0",
+    "@prettier/plugin-php": "^0.22.0"
+  }
 }

@@ -1,0 +1,11 @@
+{
+  "compilerOptions": {
+    "checkJs": true,
+    "strict": true,
+    "noEmit": true,
+    "noImplicitAny": false,
+    "skipLibCheck": true,
+    "lib": ["esnext", "DOM", "DOM.Iterable"]
+  },
+  "include": ["./**/*.js", "./**/*.d.ts"]
+}

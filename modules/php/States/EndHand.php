@@ -9,12 +9,15 @@ use Bga\Games\IsraeliWhistShahar\Game;
 // todo: do we need these imports? In the tutorial it worked without them
 use Bga\Games\IsraeliWhistShahar\States\NewHand;
 
-class EndHand extends \Bga\GameFramework\States\GameState {
-    public function __construct(protected Game $game) {
+class EndHand extends \Bga\GameFramework\States\GameState
+{
+    public function __construct(protected Game $game)
+    {
         parent::__construct($game, id: 40, type: StateType::GAME);
     }
 
-    function onEnteringState() {
+    function onEnteringState()
+    {
         // Calculate scores for each player
         $players = $this->game->loadPlayersBasicInfos();
 
@@ -22,8 +25,8 @@ class EndHand extends \Bga\GameFramework\States\GameState {
             $sql = "SELECT tricks_taken, tricks_need FROM player WHERE player_id='$player_id'";
             $player_data = $this->game->getObjectFromDB($sql);
 
-            $tricks_taken = $player_data['tricks_taken'];
-            $tricks_need = $player_data['tricks_need'];
+            $tricks_taken = $player_data["tricks_taken"];
+            $tricks_need = $player_data["tricks_need"];
 
             $score = 0;
             if ($tricks_taken == $tricks_need) {
@@ -45,31 +48,35 @@ class EndHand extends \Bga\GameFramework\States\GameState {
 
             // Notify about points
             $this->game->notifyAllPlayers(
-                'points',
+                "points",
                 clienttranslate('${player_name} scores ${points} points'),
                 [
-                    'player_id' => $player_id,
-                    'player_name' => $this->game->getPlayerNameById($player_id),
-                    'points' => $score,
-                ],
+                    "player_id" => $player_id,
+                    "player_name" => $this->game->getPlayerNameById($player_id),
+                    "points" => $score,
+                ]
             );
         }
 
         // Reset tricks for next hand
-        $sql = 'UPDATE player SET tricks_taken = 0, tricks_need = 0';
+        $sql = "UPDATE player SET tricks_taken = 0, tricks_need = 0";
         $this->game->DbQuery($sql);
 
         // Check if game should end (after certain number of rounds)
-        $round = $this->game->getGameStateValue('round_number');
+        $round = $this->game->getGameStateValue("round_number");
         if ($round >= 13) {
             // Game ends after 13 rounds
             return 99; // todo: check this actually hands the game
         } else {
             // Next round
-            $this->game->setGameStateValue('round_number', $round + 1);
-            $this->game->notifyAllPlayers('newRound', clienttranslate('Round ${round_number}'), [
-                'round_number' => $round + 1,
-            ]);
+            $this->game->setGameStateValue("round_number", $round + 1);
+            $this->game->notifyAllPlayers(
+                "newRound",
+                clienttranslate('Round ${round_number}'),
+                [
+                    "round_number" => $round + 1,
+                ]
+            );
             return NewHand::class;
         }
     }

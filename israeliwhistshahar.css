@@ -1,146 +1,84 @@
-/**
- *------
- * BGA framework: © Gregory Isabelli <gisabelli@boardgamearena.com> & Emmanuel Colin <ecolin@boardgamearena.com>
- * IsraeliWhistShahar implementation : © Tom Golan tomgolanx@gmail.com
- *
- * This code has been produced on the BGA studio platform for use on http://boardgamearena.com.
- * See http://en.boardgamearena.com/#!doc/Studio for more information.
- * -----
- *
- * israeliwhistshahar.css
- *
- * IsraeliWhistShahar stylesheet
- *
- */
-
-/*
-    This is the CSS stylesheet of your game User Interface.
-
-    Styles defined on this file will be applied to the HTML elements you define in your
-    HTML template (israeliwhistshahar_israeliwhistshahar.tpl), and to HTML elements you create dynamically
-    (in israeliwhistshahar.js).
-
-    Usually, you are using CSS to:
-
-    1°) define the overall layout of your game
-        (ex: place the board on the top left, place player's hand beside, place the deck on the right, ...).
-
-    2°) create your CSS-sprites:
-        All images of your games should be gathered into a small number of image files. Then, using
-        background-image and background-position CSS properties, you create HTML blocks that can
-        display these images correctly (see example below).
-
-    3°) ... anything else:
-        It is really easy to add and remove CSS classes dynamically from your Javascript with
-        dojo.addClass and dojo.removeClass. It is also easy to check if an element has a class
-        (dojo.hasClass) or to get all elements with a specific class (dojo.query). This is why,
-        very often, using CSS classes for the logic of your user interface allow you to do complex
-        thing easily.
-
-
-     Note: on the production platform, this file will be compressed and comments will be removed.
-           Consequently, don't hesitate to put as many comments as necessary.
-*/
-
-/* Note: you must not use any @import directive */
-
-/********* You can start writing your CSS below this line: **********/
-
-/*
-    Example of CSS sprites (a black token and a white token, 20x20px each, embedded in the same "tokens.png" 40x20px image):
-
-    .white_token {
-        background-image: url('img/tokens.png');
-        background-position: 0px 0px;
-    }
-    .black_token {
-        background-image: url('img/tokens.png');
-        background-position: -20px 0px;
-    }
-    .token {
-        width: 20px;
-        height: 20px;
-        background-repeat: none;
-    }
-*/
-
-/** Table layout **/
-
-#game_board_wrap {
-    display: inline-block;
-    flex-direction: column;
-    justify-content: space-evenly;
+/* Tables */
+.playertablecard {
+  display: inline-block;
+  position: relative;
+  margin-top: 5px;
+  width: 72px;
+  height: 96px;
 }
 
-#playertables {
-    position: relative;
-    width: 400px;
-    height: 335px;
-    text-align: center;
-    margin: auto 5px auto auto;
+.cardontable {
+  position: absolute;
+  width: 72px;
+  height: 96px;
+  background-image: url("img/cards.jpg");
 }
 
-#myhand_wrap {
-    margin-top: 55px;
+#player-tables {
+  position: relative;
+  width: 710px;
+  height: 340px;
 }
 
 .playertablename {
-    font-weight: bold;
+  font-weight: bold;
 }
 
 .playertable {
-    position: absolute;
-    text-align: center;
-    width: 180px;
-    height: 130px;
+  position: absolute;
+  text-align: center;
+  width: 180px;
+  height: 130px;
 }
 
 .playertable_N {
-    left: 60%;
-    top: 0px;
-    margin-left: -90px; /* half of 180 */
+  left: 50%;
+  top: 0px;
+  margin-left: -90px; /* half of 180 */
 }
 .playertable_S {
-    left: 60%;
-    bottom: -100px;
-    margin-left: -90px; /* half of 180 */
+  left: 50%;
+  bottom: 0px;
+  margin-left: -90px; /* half of 180 */
 }
 .playertable_W {
-    left: -20px;
-    top: 50%;
-    margin-top: -55px; /* half of 130 */
+  left: 0px;
+  top: 50%;
+  margin-top: -55px; /* half of 130 */
 }
 .playertable_E {
-    right: -100px;
-    top: 50%;
-    margin-top: -55px; /* half of 130 */
+  right: 0px;
+  top: 50%;
+  margin-top: -55px; /* half of 130 */
+}
+
+/* #myhand_wrap {
+  margin-top: 55px;
 }
 
 .playertablecard {
-    display: inline-block;
-    position: relative;
-    margin-top: 0px;
-    width: 72px;
-    height: 96px;
+  display: inline-block;
+  position: relative;
+  margin-top: 0px;
+  width: 72px;
+  height: 96px;
 }
 
-/*** cards on table ***/
-
 .cardontable {
-    position: absolute;
-    width: 72px;
-    height: 96px;
-    background-image: url('img/cards.jpg');
+  position: absolute;
+  width: 72px;
+  height: 96px;
+  background-image: url("img/cards.jpg");
 }
 
 #roundInfo {
-    width: max-content;
-    margin-top: 100px;
+  width: max-content;
+  margin-top: 100px;
 }
 
 #bidInfo {
-    display: flex;
-    margin-top: 5px;
-    top: 50%;
-    left: 50%;
-}
+  display: flex;
+  margin-top: 5px;
+  top: 50%;
+  left: 50%;
+} */
