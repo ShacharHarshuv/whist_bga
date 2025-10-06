@@ -1,11 +1,17 @@
 {
+  "rootDir": ".",
   "compilerOptions": {
-    "checkJs": true,
-    "strict": true,
-    "noEmit": true,
-    "noImplicitAny": false,
-    "skipLibCheck": true,
-    "lib": ["esnext", "DOM", "DOM.Iterable"]
+    "target": "es5",
+    "module": "none",
+    "lib": ["dom", "esnext"],
+    "sourceMap": false,
+    "typeRoots": ["src/types", "./types", "./node_modules/@types"],
+    "outFile": "israeliwhistshahar.js"
   },
-  "include": ["./**/*.js", "./**/*.d.ts"]
+  "files": [
+    "bga-framework.d.ts",
+    "src/israeliwhistshahar.d.ts",
+    "src/israeliwhistshahar.ts",
+    "src/define.ts"
+  ]
 }
