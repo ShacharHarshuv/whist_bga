@@ -46,10 +46,6 @@ define([
   return declare("bgagame.israeliwhistshahar", ebg.core.gamegui, {
     constructor: function () {
       console.log("israeliwhistshahar constructor");
-
-      // TODO: implement the UI for the tricks
-      // this.tricks_counter = {};
-      // this.contract_counter = {};
     },
 
     /**
@@ -67,9 +63,17 @@ define([
         this.getPlayerPanelElement(playerId),
       );
 
-      for (const playerId in gamedatas.players) {
-        const player = gamedatas.players[playerId];
-        updatePlayerBid(playerId, player.bid_value, player.bid_suit);
+      if (gamedatas.gamestate.name == "PlayerBid") {
+        for (const playerId in gamedatas.players) {
+          const player = gamedatas.players[playerId];
+          updatePlayerBid(playerId, player.bid_value, player.bid_suit);
+        }
+      } else {
+        for (const playerId in gamedatas.players) {
+          const player = gamedatas.players[playerId];
+          updatePlayerBid(playerId, player.bid_value, player.bid_suit);
+          updatePlayerContract(playerId, player.contract);
+        }
       }
 
       // Setup game notifications to handle (see "setupNotifications" method below)
@@ -86,34 +90,6 @@ define([
     //
     onEnteringState: function (stateName, args) {
       console.log("Entering state: " + stateName);
-
-      switch (stateName) {
-        /* Example:
-
-            case 'myGameState':
-
-                // Show some HTML block at this game state
-                dojo.style( 'my_html_block_id', 'display', 'block' );
-
-                break;
-           */
-
-        case "playerTurn":
-          dojo.style("bidInfo", "display", "none");
-          break;
-
-        case "playerBid":
-          dojo.style("bidInfo", "display", "block");
-          dojo.style("shape", "display", "block");
-          break;
-
-        case "playerBet":
-          dojo.style("shape", "display", "none");
-          break;
-
-        case "dummmy":
-          break;
-      }
     },
 
     // onLeavingState: this method is called each time we are leaving a game state.
@@ -179,7 +155,6 @@ define([
           this.statusBar.addActionButton("←", () => suitSelection(), {
             color: "secondary",
           });
-          console.log("highestBid", highestBid);
           const minimumBid = highestBid
             ? highestBid.value + (suit > highestBid.suit ? 0 : 1)
             : 5;
@@ -199,45 +174,42 @@ define([
         suitSelection();
       };
 
-      if (this.isCurrentPlayerActive()) {
-        switch (stateName) {
-          case "PlayerBid":
-            createPlayerBidButtons();
-            break;
-          // TODO: update that
-          case "PlayerBet":
-            this.statusBar.addActionButton(_("Bet"), "onPlayerBet");
-            break;
+      const createDeclarationButtons = () => {
+        console.log("highestBid", highestBid, this.player_id);
+        const min = (() => {
+          if (highestBid && highestBid.playerId == this.player_id) {
+            return highestBid.value;
+          } else {
+            return 0;
+          }
+        })();
+
+        const max = 13;
+        for (let value = min; value <= max; value++) {
+          this.statusBar.addActionButton(
+            value.toString(),
+            () => this.bgaPerformAction("actDeclare", { value }),
+            {
+              color: "secondary",
+            },
+          );
         }
-        /*
-                 Example:
+      };
 
-                 case 'myGameState':
+      if (!this.isCurrentPlayerActive()) {
+        return;
+      }
 
-                    // Add 3 action buttons in the action status bar:
-
-                    this.addActionButton( 'button_1_id', _('Button 1 label'), 'onMyMethodToCall1' );
-                    this.addActionButton( 'button_2_id', _('Button 2 label'), 'onMyMethodToCall2' );
-                    this.addActionButton( 'button_3_id', _('Button 3 label'), 'onMyMethodToCall3' );
-                    break;
-*/
+      switch (stateName) {
+        case "PlayerBid":
+          createPlayerBidButtons();
+          break;
+        // TODO: update that
+        case "PlayerDeclaration":
+          createDeclarationButtons();
+          break;
       }
     },
-
-    // todo: we should change this
-    // onPlayerBet: function () {
-    //   const action = "bet";
-    //   if (!this.checkAction(action)) return;
-    //   const bidValue = $("bid_value").value;
-
-    //   this.ajaxcall(
-    //     "/" + this.game_name + "/" + this.game_name + "/" + action + ".html",
-    //     { lock: true, bid_value: bidValue },
-    //     this,
-    //     function (result) {},
-    //     function (is_error) {},
-    //   );
-    // },
 
     ///////////////////////////////////////////////////
     //// Utility methods
@@ -378,6 +350,12 @@ define([
       updatePlayerBid(notif.player_id, notif.value, notif.suit);
     },
 
+    notif_bidWon: function (notif) {
+      for (const playerId in this.gamedatas.players) {
+        updatePlayerBid(playerId, 0, 0);
+      }
+    },
+
     notif_trickWin: function (notif) {
       // We do nothing here (just wait in order players can view the 4 cards played before they're gone.
       this.tricks_counter[notif.args.player_id].incValue(1);
@@ -415,10 +393,8 @@ define([
       }
     },
 
-    notif_playerBet: function (notif) {
-      this.contract_counter[notif.args.player_id].setValue(
-        notif.args.value_displayed,
-      );
+    notif_playerContract: function (notif) {
+      updatePlayerContract(notif.player_id, notif.value);
     },
   });
 });
@@ -524,13 +500,13 @@ function createPlayersPanels(players, getPlayerPanelElement) {
       "beforeend",
       html`<div class="player-panel" id="player_panel_${playerId}">
         <div id="bid"></div>
+        <div id="contract"></div>
       </div>`,
     );
   }
 }
 
 /**
- *
  * @param {number|string} playerId
  * @param {number} bidValue
  * @param {number} bidSuit
@@ -548,6 +524,17 @@ function updatePlayerBid(playerId, bidValue, bidSuit) {
 
   updatePanelElement(playerId, "bid", getBidText());
 
+  // todo: consider rendering it in other places (like the table)
+  updateHighestBidState(playerId, bidValue, bidSuit);
+}
+
+/**
+ *
+ * @param {number|string} playerId
+ * @param {number} bidValue
+ * @param {number} bidSuit
+ */
+function updateHighestBidState(playerId, bidValue, bidSuit) {
   if (
     bidValue > 0 &&
     (!highestBid ||
@@ -559,8 +546,17 @@ function updatePlayerBid(playerId, bidValue, bidSuit) {
       playerId,
     };
   }
+}
 
-  // todo: consider rendering it in other places (like the table)
+/**
+ * @param {number|string} playerId
+ * @param {number|string} value
+ */
+function updatePlayerContract(playerId, value) {
+  if (+value < 0) {
+    updatePanelElement(playerId, "contract", html``);
+  }
+  updatePanelElement(playerId, "contract", html`<b>Contract:</b> ${value}`);
 }
 
 /**

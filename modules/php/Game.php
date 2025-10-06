@@ -7,7 +7,7 @@ namespace Bga\Games\israeliwhistshahar;
 use Bga\Games\israeliwhistshahar\States\NewHand;
 use Bga\Games\israeliwhistshahar\States\NextPlayer;
 use Bga\Games\israeliwhistshahar\States\NextBidder;
-use Bga\Games\israeliwhistshahar\States\NextBet;
+use Bga\Games\israeliwhistshahar\States\NextDeclaration;
 use Bga\Games\israeliwhistshahar\States\ZombiePass;
 
 /*
@@ -350,53 +350,6 @@ class Game extends \Bga\GameFramework\Table
             ]
         );
         return NextPlayer::class;
-    }
-
-    function playerBet($bet_value)
-    {
-        $player_id = self::getActivePlayerId();
-        $currentBidPlayerId = self::getGameStateValue("currentBidPlayerId");
-        $currentBidValue = self::getGameStateValue("currentBidValue");
-
-        if (
-            $player_id == $currentBidPlayerId &&
-            $bet_value < $currentBidValue
-        ) {
-            throw new \BgaVisibleSystemException(
-                self::_("Bet cannot be smaller then bid value")
-            );
-        }
-
-        $contractsSum = self::getGameStateValue("contractsSum");
-        $numberOfContracts = self::getGameStateValue("numberOfContracts");
-        $sum_bets = $contractsSum + $bet_value;
-
-        if ($sum_bets == 13) {
-            throw new \BgaVisibleSystemException(
-                self::_("Total bets value cannot be exactly 13")
-            );
-        }
-
-        $numberOfContracts = $numberOfContracts + 1;
-        self::setGameStateValue("contractsSum", $sum_bets);
-        self::setGameStateValue("numberOfContracts", $numberOfContracts);
-
-        $sql = "UPDATE player SET contract=$bet_value WHERE player_id='$player_id'";
-        self::DbQuery($sql);
-
-        self::notifyAllPlayers(
-            "playerBet",
-            clienttranslate(
-                '${player_name} bet on taking ${value_displayed} tricks'
-            ),
-            [
-                "player_name" => self::getActivePlayerName(),
-                "player_id" => $player_id,
-                "value_displayed" => $bet_value,
-            ]
-        );
-
-        return NextBet::class;
     }
 
     //////////////////////////////////////////////////////////////////////////////

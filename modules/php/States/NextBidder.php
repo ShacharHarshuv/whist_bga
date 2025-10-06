@@ -47,7 +47,7 @@ class NextBidder extends \Bga\GameFramework\States\GameState
             $this->game->gamestate->changeActivePlayer(
                 $this->game->getGameStateValue("currentBidPlayerId")
             );
-            return PlayerBet::class;
+            return PlayerDeclaration::class;
         } else {
             $nextPlayerId = $this->game->activeNextPlayer();
             while ($bids[$nextPlayerId]["bid_value"] == -2) {

@@ -31,10 +31,10 @@ interface Player {
   color: string;
   name: string;
   score: string;
-  taken: string;
-  tricks: string;
   bid_value: number;
   bid_suit: number;
+  contract: string;
+  taken: string;
 }
 
 interface GameDatas {
@@ -45,4 +45,8 @@ interface GameDatas {
   cardsontable: Card[];
   roundNumber: number;
   round_trump: number;
+  gamestate: {
+    id: number;
+    name: string;
+  };
 }

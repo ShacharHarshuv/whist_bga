@@ -7,7 +7,7 @@ namespace Bga\Games\israeliwhistshahar\States;
 use Bga\GameFramework\StateType;
 use Bga\Games\israeliwhistshahar\Game;
 
-class NextBet extends \Bga\GameFramework\States\GameState
+class NextDeclaration extends \Bga\GameFramework\States\GameState
 {
     public function __construct(protected Game $game)
     {
@@ -36,7 +36,7 @@ class NextBet extends \Bga\GameFramework\States\GameState
         } else {
             // Move to next player for betting
             $this->game->activeNextPlayer();
-            return PlayerBet::class;
+            return PlayerDeclaration::class;
         }
     }
 }
