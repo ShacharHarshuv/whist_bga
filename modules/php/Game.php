@@ -43,10 +43,22 @@ class Game extends \Bga\GameFramework\Table
 
         // Initialize suits and values
         $this->suits = [
-            1 => "club",
-            2 => "diamond",
-            3 => "heart",
-            4 => "spade",
+            1 => [
+                "name" => "club",
+                "emoji" => "♣️",
+            ],
+            2 => [
+                "name" => "diamond",
+                "emoji" => "♦️",
+            ],
+            3 => [
+                "name" => "heart",
+                "emoji" => "♥️",
+            ],
+            4 => [
+                "name" => "spade",
+                "emoji" => "♠️",
+            ],
         ];
 
         $this->values_label = [
@@ -288,19 +300,6 @@ class Game extends \Bga\GameFramework\Table
         }
     }
 
-    function isNewWinningBid(
-        $bid_value,
-        $shape,
-        $currentBidValue,
-        $currentBidSuit
-    ) {
-        $better_shape = $shape > $currentBidSuit;
-        $better_value = $bid_value > $currentBidValue;
-        $same_value = $bid_value == $currentBidValue;
-
-        return ($same_value == true && $better_shape == true) || $better_value;
-    }
-
     //////////////////////////////////////////////////////////////////////////////
     //////////// Player actions
     ////////////
@@ -342,7 +341,7 @@ class Game extends \Bga\GameFramework\Table
                     $this->values_label[$currentCard["type_arg"]],
                 "color" => $currentCard["type"],
                 "color_displayed" => clienttranslate(
-                    $this->suits[$currentCard["type"]]
+                    $this->suits[$currentCard["type"]]["name"]
                 ),
             ]
         );
@@ -365,56 +364,6 @@ class Game extends \Bga\GameFramework\Table
             clienttranslate('${player_name} passes'),
             [
                 "player_name" => self::getActivePlayerName(),
-            ]
-        );
-
-        return NextBidder::class;
-    }
-
-    function playerBid($bid_value, $shape)
-    {
-        $currentBidValue = self::getGameStateValue("currentBidValue");
-        $currentBidSuit = self::getGameStateValue("currentBidSuit");
-        $active_player_id = self::getActivePlayerId();
-
-        if ($bid_value < 5) {
-            throw new \BgaVisibleSystemException(
-                self::_("Bid value must be at lease 5")
-            );
-        }
-
-        // No bid yet
-        if (
-            $currentBidValue == 0 ||
-            $this->isNewWinningBid(
-                $bid_value,
-                $shape,
-                $currentBidValue,
-                $currentBidSuit
-            )
-        ) {
-            self::setGameStateValue("currentBidValue", $bid_value);
-            self::setGameStateValue("currentBidSuit", $shape);
-            self::setGameStateValue("currentBidPlayerId", $active_player_id);
-            self::setGameStateValue("numberOfPasses", 0);
-        } else {
-            throw new \BgaVisibleSystemException(
-                self::_("Bid is not strong enough")
-            );
-        }
-
-        // And notify
-        self::notifyAllPlayers(
-            "playerBid",
-            clienttranslate(
-                '${player_name} bids ${value_displayed} ${color_displayed}'
-            ),
-            [
-                "i18n" => ["color_displayed", "value_displayed"],
-                "player_id" => $active_player_id,
-                "player_name" => self::getActivePlayerName(),
-                "value_displayed" => $bid_value,
-                "color_displayed" => clienttranslate($this->suits[$shape]),
             ]
         );
 

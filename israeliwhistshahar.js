@@ -17,6 +17,25 @@
 
 html = String.raw;
 
+const suits = {
+  1: {
+    name: "club",
+    emoji: "♣️",
+  },
+  2: {
+    name: "diamond",
+    emoji: "♦️",
+  },
+  3: {
+    name: "heart",
+    emoji: "♥️",
+  },
+  4: {
+    name: "spade",
+    emoji: "♠️",
+  },
+};
+
 define([
   "dojo",
   "dojo/_base/declare",
@@ -271,34 +290,65 @@ define([
       console.log("onUpdateActionButtons: " + stateName);
       console.log("State Name", stateName);
 
-      const showPlayerBidSelection = () => {
-        this.removeActionButtons();
-        this.addActionButton("pass_button", _("Pass"), () =>
-          this.bgaPerformAction("actPass"),
-        );
-        // todo: improve the buttons UI for this
-        this.addActionButton("bid_button", _("Bid"), () => {
-          showSuitSelection();
-        });
-      };
+      const createPlayerBidButtons = () => {
+        const createPassButton = () => {
+          this.statusBar.addActionButton(
+            _("Pass"),
+            () => this.bgaPerformAction("actPass"),
+            {
+              color: "alert",
+            },
+          );
+        };
 
-      const showSuitSelection = () => {
-        this.removeActionButtons();
-        // back button
-        this.addActionButton("back_button", "<-", () => {
-          showPlayerBidSelection();
-        });
-        // tood: add buttons to select a suit
+        const suitSelection = () => {
+          this.removeActionButtons();
+          createPassButton();
+          for (const suit in suits) {
+            this.statusBar.addActionButton(
+              suits[suit].emoji,
+              () => valueSelection(+suit),
+              {
+                color: "secondary",
+              },
+            );
+          }
+        };
+
+        /**
+         * @param {number} suit
+         */
+        const valueSelection = (suit) => {
+          const suitEmoji = suits[suit].emoji;
+          this.removeActionButtons();
+          createPassButton();
+          this.statusBar.addActionButton("←", () => suitSelection(), {
+            color: "secondary",
+          });
+          for (let value = 5; value <= 13; value++) {
+            this.statusBar.addActionButton(
+              value + suitEmoji,
+              () => {
+                this.bgaPerformAction("actBid", { value, suit });
+              },
+              {
+                color: "secondary",
+              },
+            );
+          }
+        };
+
+        suitSelection();
       };
 
       if (this.isCurrentPlayerActive()) {
         switch (stateName) {
           case "PlayerBid":
-            showPlayerBidSelection();
+            createPlayerBidButtons();
             break;
           // TODO: update that
           case "PlayerBet":
-            this.addActionButton("bet_button", _("Bet"), "onPlayerBet");
+            this.statusBar.addActionButton(_("Bet"), "onPlayerBet");
             break;
         }
         /*

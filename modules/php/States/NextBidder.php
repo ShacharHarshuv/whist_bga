@@ -35,7 +35,7 @@ class NextBidder extends \Bga\GameFramework\States\GameState
                     "color_displayed" => $this->game->_(
                         $this->game->suits[
                             $this->game->getGameStateValue("currentBidSuit")
-                        ]
+                        ]["name"]
                     ),
                 ]
             );

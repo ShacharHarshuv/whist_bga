@@ -43,14 +43,59 @@ class PlayerBid extends \Bga\GameFramework\States\GameState
     }
 
     #[PossibleAction]
-    public function actBid(int $value, int $suit)
+    public function actBid(int $value, int $suit, int $activePlayerId)
     {
-        throw new \BgaUserException(
-            "Not implemented: bid with value ${value} and suit ${suit}",
-            args: [
-                "value" => $value,
+        // throw new \BgaUserException(
+        //     "Not implemented: bid, {$value}, {$suit}, {$activePlayerId}"
+        // );
+        $currentBidValue = $this->game->getGameStateValue("currentBidValue");
+        $currentBidSuit = $this->game->getGameStateValue("currentBidSuit");
+
+        // TODO: after Frisch, this would be higher
+        if ($value < 5) {
+            throw new \BgaVisibleSystemException(
+                clienttranslate("Bid value must be at least 5")
+            );
+        }
+
+        if (!isBidHigher($currentBidSuit, $currentBidValue, $suit, $value)) {
+            throw new \BgaVisibleSystemException(
+                clienttranslate("Bid is not higher than the current bid")
+            );
+        }
+
+        $this->game->setGameStateValue("currentBidValue", $value);
+        $this->game->setGameStateValue("currentBidSuit", $suit);
+        $this->game->setGameStateValue("currentBidPlayerId", $activePlayerId);
+        $this->game->setGameStateValue("numberOfPasses", 0);
+
+        // And notify
+        $this->game->notify->all(
+            "playerBid",
+            clienttranslate('${player_name} bids ${bidDisplay}'),
+            [
+                "player_id" => $activePlayerId,
+                "player_name" => $this->game->getPlayerNameById(
+                    $activePlayerId
+                ),
                 "suit" => $suit,
+                "value" => $value,
+                "bidDisplay" =>
+                    $this->game->values_label[$value] .
+                    $this->game->suits[$suit]["emoji"],
             ]
         );
+
+        return NextBidder::class;
     }
+}
+
+function isBidHigher(
+    $currentBidSuit,
+    $currentBidValue,
+    $newBidSuit,
+    $newBidValue
+) {
+    return $newBidValue >=
+        $currentBidValue + ($newBidSuit > $currentBidSuit ? 1 : 0);
 }
