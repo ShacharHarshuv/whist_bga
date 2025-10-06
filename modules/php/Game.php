@@ -77,31 +77,7 @@ class Game extends \Bga\GameFramework\Table
             14 => clienttranslate("A"),
         ];
 
-        $this->deck = $this->createDeck();
-    }
-
-    private function createDeck()
-    {
-        $deck = $this->deckFactory->createDeck("card");
-        $deck->init("card");
-        $cards = [];
-        foreach ($this->suits as $suitId => $suit) {
-            for ($value = 2; $value <= 14; $value++) {
-                //  2, 3, 4, ... K, A
-                $cards[] = [
-                    "type" => $suitId,
-                    "type_arg" => $value,
-                    "nbr" => 1,
-                ];
-            }
-        }
-
-        $deck->createCards($cards, "deck");
-
-        // Shuffle deck
-        $deck->shuffle("deck");
-
-        return $deck;
+        $this->deck = $this->deckFactory->createDeck("card");
     }
 
     protected function getGameName()
@@ -176,11 +152,7 @@ class Game extends \Bga\GameFramework\Table
 
         $this->setGameStateInitialValue("numberOfContracts", 0);
 
-        // Deal 13 cards to each players
-        $players = $this->loadPlayersBasicInfos();
-        foreach ($players as $player_id => $player) {
-            $this->deck->pickCards(13, "deck", $player_id);
-        }
+        $this->createCards();
 
         // Init global values with their initial values
         //self::setGameStateInitialValue( 'my_first_global_variable', 0 );
@@ -196,6 +168,25 @@ class Game extends \Bga\GameFramework\Table
         $this->activeNextPlayer();
 
         return NewHand::class;
+    }
+
+    private function createCards()
+    {
+        // Initialize the deck (cards will be dealt in NewHand state)
+        $this->deck->init("card");
+        $cards = [];
+        foreach (array_keys($this->suits) as $suitId) {
+            for ($value = 2; $value <= 14; $value++) {
+                //  2, 3, 4, ... K, A
+                $cards[] = [
+                    "type" => $suitId,
+                    "type_arg" => $value,
+                    "nbr" => 1,
+                ];
+            }
+        }
+        $this->deck->createCards($cards, "deck");
+        $this->deck->shuffle("deck");
     }
 
     protected function getAllDatas(): array
