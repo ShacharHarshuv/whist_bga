@@ -28,16 +28,16 @@ class NextPlayer extends \Bga\GameFramework\States\GameState
             );
             $best_value = 0;
             $best_value_player_id = null;
-            $currentTrickColor = $this->game->getGameStateValue("trickColor");
-            $currentTrumpColor = $this->game->getGameStateValue(
-                "current_bid_shape"
+            $currenttrickSuit = $this->game->getGameStateValue("trickSuit");
+            $currenttrumpSuit = $this->game->getGameStateValue(
+                "currentBidSuit"
             );
             $best_trump_player_id = null;
             $best_trump = 0;
 
             foreach ($cards_on_table as $card) {
                 // Note: type = card color
-                if ($card["type"] == $currentTrickColor) {
+                if ($card["type"] == $currenttrickSuit) {
                     if (
                         $best_value_player_id === null ||
                         $card["type_arg"] > $best_value
@@ -45,7 +45,7 @@ class NextPlayer extends \Bga\GameFramework\States\GameState
                         $best_value_player_id = $card["location_arg"]; // Note: location_arg = player who played this card on table
                         $best_value = $card["type_arg"]; // Note: type_arg = value of the card
                     }
-                } elseif ($card["type"] == $currentTrumpColor) {
+                } elseif ($card["type"] == $currenttrumpSuit) {
                     if (
                         $best_trump_player_id === null ||
                         $card["type_arg"] > $best_trump

@@ -18,7 +18,7 @@ class NewTrick extends \Bga\GameFramework\States\GameState
     function onEnteringState(): string
     {
         // Reset trick color
-        $this->game->setGameStateValue("trickColor", 0);
+        $this->game->setGameStateValue("trickSuit", 0);
 
         return PlayerTurn::class;
     }

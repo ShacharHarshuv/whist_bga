@@ -41,6 +41,6 @@ interface GameDatas {
   };
   hand: Card[];
   cardsontable: Card[];
-  round_number: number;
+  roundNumber: number;
   round_trump: number;
 }

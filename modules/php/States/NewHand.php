@@ -38,12 +38,12 @@ class NewHand extends \Bga\GameFramework\States\GameState
         }
 
         // init globals
-        $this->game->setGameStateValue("num_of_passes", 0);
-        $this->game->setGameStateValue("current_bid", 0);
-        $this->game->setGameStateValue("current_bid_shape", 0);
-        $this->game->setGameStateValue("current_bid_player_id", 0);
-        $this->game->setGameStateValue("total_round_bets", 0);
-        $this->game->setGameStateValue("num_of_bets", 0);
+        $this->game->setGameStateValue("numberOfPasses", 0);
+        $this->game->setGameStateValue("currentBidValue", 0);
+        $this->game->setGameStateValue("currentBidSuit", 0);
+        $this->game->setGameStateValue("currentBidPlayerId", 0);
+        $this->game->setGameStateValue("contractsSum", 0);
+        $this->game->setGameStateValue("numberOfContracts", 0);
 
         return PlayerBid::class;
     }

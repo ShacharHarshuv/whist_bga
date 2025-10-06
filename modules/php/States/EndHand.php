@@ -63,18 +63,18 @@ class EndHand extends \Bga\GameFramework\States\GameState
         $this->game->DbQuery($sql);
 
         // Check if game should end (after certain number of rounds)
-        $round = $this->game->getGameStateValue("round_number");
+        $round = $this->game->getGameStateValue("roundNumber");
         if ($round >= 13) {
             // Game ends after 13 rounds
             return 99; // todo: check this actually hands the game
         } else {
             // Next round
-            $this->game->setGameStateValue("round_number", $round + 1);
+            $this->game->setGameStateValue("roundNumber", $round + 1);
             $this->game->notifyAllPlayers(
                 "newRound",
-                clienttranslate('Round ${round_number}'),
+                clienttranslate('Round ${roundNumber}'),
                 [
-                    "round_number" => $round + 1,
+                    "roundNumber" => $round + 1,
                 ]
             );
             return NewHand::class;

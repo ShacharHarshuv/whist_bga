@@ -28,16 +28,17 @@ class Game extends \Bga\GameFramework\Table
         parent::__construct();
 
         $this->initGameStateLabels([
-            "currentHandType" => 10,
-            "trickColor" => 11,
-            "trumpColor" => 12,
-            "round_number" => 13,
-            "num_of_passes" => 14,
-            "current_bid" => 15,
-            "current_bid_shape" => 16,
-            "current_bid_player_id" => 17,
-            "total_round_bets" => 18,
-            "num_of_bets" => 19,
+            "trickSuit" => 11,
+            "trumpSuit" => 12,
+            "roundNumber" => 13,
+            "numberOfPasses" => 14, // is that the best way to track it? Perhaps we should track who passed instead?
+            // As above, perhaps it's better to track the lastest bids for all players so we can display it? For now let's go with this
+            "currentBidValue" => 15,
+            "currentBidSuit" => 16,
+            "currentBidPlayerId" => 17,
+            // Do we need those two? It seems like it would be derived from the state of the contracts, and doesn't need to be separate
+            "contractsSum" => 18,
+            "numberOfContracts" => 19,
         ]);
 
         // Initialize suits and values
@@ -153,33 +154,27 @@ class Game extends \Bga\GameFramework\Table
 
         /************ Start the game initialization *****/
 
-        // Note: hand types: 0 = give 3 cards to player on the left
-        //                   1 = give 3 cards to player on the right
-        //                   2 = give 3 cards to player opposite
-        //                   3 = keep cards
-        $this->setGameStateInitialValue("currentHandType", 0);
-
         // Set current trick color to zero (= no trick color)
-        $this->setGameStateInitialValue("trickColor", 0);
+        $this->setGameStateInitialValue("trickSuit", 0);
 
         //  Set current trump color to zero (= no trump color)
-        $this->setGameStateInitialValue("trumpColor", 0);
+        $this->setGameStateInitialValue("trumpSuit", 0);
 
         //  Set current trump color to zero (= no trump color)
-        $this->setGameStateInitialValue("round_number", 1);
+        $this->setGameStateInitialValue("roundNumber", 1);
 
         //  Set current trump color to zero (= no trump color)
-        $this->setGameStateInitialValue("num_of_passes", 0);
+        $this->setGameStateInitialValue("numberOfPasses", 0);
 
-        $this->setGameStateInitialValue("current_bid", 0);
+        $this->setGameStateInitialValue("currentBidValue", 0);
 
-        $this->setGameStateInitialValue("current_bid_shape", 0);
+        $this->setGameStateInitialValue("currentBidSuit", 0);
 
-        $this->setGameStateInitialValue("current_bid_player_id", 0);
+        $this->setGameStateInitialValue("currentBidPlayerId", 0);
 
-        $this->setGameStateInitialValue("total_round_bets", 0);
+        $this->setGameStateInitialValue("contractsSum", 0);
 
-        $this->setGameStateInitialValue("num_of_bets", 0);
+        $this->setGameStateInitialValue("numberOfContracts", 0);
 
         // Deal 13 cards to each players
         $players = $this->loadPlayersBasicInfos();
@@ -230,9 +225,9 @@ class Game extends \Bga\GameFramework\Table
             "cardsontable"
         );
 
-        $result["round_number"] = $this->getGameStateValue("round_number");
+        $result["roundNumber"] = $this->getGameStateValue("roundNumber");
 
-        $result["round_trump"] = $this->getGameStateValue("current_bid_shape");
+        $result["round_trump"] = $this->getGameStateValue("currentBidSuit");
 
         foreach ($result["players"] as $player_id => $player) {
             $this->dump(
@@ -264,7 +259,7 @@ class Game extends \Bga\GameFramework\Table
     */
     function getGameProgression()
     {
-        $round = $this->getGameStateValue("round_number");
+        $round = $this->getGameStateValue("roundNumber");
         return $round * 10;
     }
 
@@ -279,7 +274,7 @@ class Game extends \Bga\GameFramework\Table
     function checkPlayableCards($player_id): array
     {
         // Get all data needed to check playable cards at the moment
-        $currentTrickColor = $this->getGameStateValue("trickColor");
+        $currenttrickSuit = $this->getGameStateValue("trickSuit");
         $hand = $this->deck->getPlayerHand($player_id);
         $all_ids = self::getObjectListFromDB(
             "SELECT card_id FROM card WHERE card_location = 'hand' AND card_location_arg = $player_id",
@@ -290,7 +285,7 @@ class Game extends \Bga\GameFramework\Table
             return [];
         } // Already played a card
 
-        if (!$currentTrickColor) {
+        if (!$currenttrickSuit) {
             // First card of the trick
             return $all_ids;
         }
@@ -299,14 +294,14 @@ class Game extends \Bga\GameFramework\Table
             // Must follow the lead suit if possible
             $same_suit = false;
             foreach ($hand as $card) {
-                if ($card["type"] == $currentTrickColor) {
+                if ($card["type"] == $currenttrickSuit) {
                     $same_suit = true;
                     break;
                 }
             }
             if ($same_suit) {
                 return self::getObjectListFromDB(
-                    "SELECT card_id FROM card WHERE card_type = $currentTrickColor AND card_location = 'hand' AND card_location_arg = $player_id",
+                    "SELECT card_id FROM card WHERE card_type = $currenttrickSuit AND card_location = 'hand' AND card_location_arg = $player_id",
                     true
                 );
             }
@@ -346,14 +341,14 @@ class Game extends \Bga\GameFramework\Table
     function isNewWinningBid(
         $bid_value,
         $shape,
-        $current_bid,
-        $current_bid_shape
+        $currentBidValue,
+        $currentBidSuit
     ) {
         $better_shape =
             $this->getShapePower($shape) >
-            $this->getShapePower($current_bid_shape);
-        $better_value = $bid_value > $current_bid;
-        $same_value = $bid_value == $current_bid;
+            $this->getShapePower($currentBidSuit);
+        $better_value = $bid_value > $currentBidValue;
+        $same_value = $bid_value == $currentBidValue;
 
         return ($same_value == true && $better_shape == true) || $better_value;
     }
@@ -378,9 +373,9 @@ class Game extends \Bga\GameFramework\Table
         $this->deck->moveCard($card_id, "cardsontable", $player_id);
         $currentCard = $this->deck->getCard($card_id);
 
-        $currentTrickColor = self::getGameStateValue("trickColor");
-        if ($currentTrickColor == 0) {
-            self::setGameStateValue("trickColor", $currentCard["type"]);
+        $currenttrickSuit = self::getGameStateValue("trickSuit");
+        if ($currenttrickSuit == 0) {
+            self::setGameStateValue("trickSuit", $currentCard["type"]);
         }
 
         // And notify
@@ -412,8 +407,8 @@ class Game extends \Bga\GameFramework\Table
         $sql = "UPDATE player SET player_bid_value=-2 WHERE player_id='$player_id'";
         self::DbQuery($sql);
 
-        $passes = self::getGameStateValue("num_of_passes");
-        self::setGameStateValue("num_of_passes", $passes + 1);
+        $passes = self::getGameStateValue("numberOfPasses");
+        self::setGameStateValue("numberOfPasses", $passes + 1);
 
         self::notifyAllPlayers(
             "playerPass",
@@ -428,8 +423,8 @@ class Game extends \Bga\GameFramework\Table
 
     function playerBid($bid_value, $shape)
     {
-        $current_bid = self::getGameStateValue("current_bid");
-        $current_bid_shape = self::getGameStateValue("current_bid_shape");
+        $currentBidValue = self::getGameStateValue("currentBidValue");
+        $currentBidSuit = self::getGameStateValue("currentBidSuit");
         $active_player_id = self::getActivePlayerId();
 
         if ($bid_value < 5) {
@@ -440,18 +435,18 @@ class Game extends \Bga\GameFramework\Table
 
         // No bid yet
         if (
-            $current_bid == 0 ||
+            $currentBidValue == 0 ||
             $this->isNewWinningBid(
                 $bid_value,
                 $shape,
-                $current_bid,
-                $current_bid_shape
+                $currentBidValue,
+                $currentBidSuit
             )
         ) {
-            self::setGameStateValue("current_bid", $bid_value);
-            self::setGameStateValue("current_bid_shape", $shape);
-            self::setGameStateValue("current_bid_player_id", $active_player_id);
-            self::setGameStateValue("num_of_passes", 0);
+            self::setGameStateValue("currentBidValue", $bid_value);
+            self::setGameStateValue("currentBidSuit", $shape);
+            self::setGameStateValue("currentBidPlayerId", $active_player_id);
+            self::setGameStateValue("numberOfPasses", 0);
         } else {
             throw new \BgaVisibleSystemException(
                 self::_("Bid is not strong enough")
@@ -479,20 +474,21 @@ class Game extends \Bga\GameFramework\Table
     function playerBet($bet_value)
     {
         $player_id = self::getActivePlayerId();
-        $current_bid_player_id = self::getGameStateValue(
-            "current_bid_player_id"
-        );
-        $current_bid = self::getGameStateValue("current_bid");
+        $currentBidPlayerId = self::getGameStateValue("currentBidPlayerId");
+        $currentBidValue = self::getGameStateValue("currentBidValue");
 
-        if ($player_id == $current_bid_player_id && $bet_value < $current_bid) {
+        if (
+            $player_id == $currentBidPlayerId &&
+            $bet_value < $currentBidValue
+        ) {
             throw new \BgaVisibleSystemException(
                 self::_("Bet cannot be smaller then bid value")
             );
         }
 
-        $total_round_bets = self::getGameStateValue("total_round_bets");
-        $num_of_bets = self::getGameStateValue("num_of_bets");
-        $sum_bets = $total_round_bets + $bet_value;
+        $contractsSum = self::getGameStateValue("contractsSum");
+        $numberOfContracts = self::getGameStateValue("numberOfContracts");
+        $sum_bets = $contractsSum + $bet_value;
 
         if ($sum_bets == 13) {
             throw new \BgaVisibleSystemException(
@@ -500,9 +496,9 @@ class Game extends \Bga\GameFramework\Table
             );
         }
 
-        $num_of_bets = $num_of_bets + 1;
-        self::setGameStateValue("total_round_bets", $sum_bets);
-        self::setGameStateValue("num_of_bets", $num_of_bets);
+        $numberOfContracts = $numberOfContracts + 1;
+        self::setGameStateValue("contractsSum", $sum_bets);
+        self::setGameStateValue("numberOfContracts", $numberOfContracts);
 
         $sql = "UPDATE player SET tricks_need=$bet_value WHERE player_id='$player_id'";
         self::DbQuery($sql);

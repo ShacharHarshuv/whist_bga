@@ -72,7 +72,7 @@ define([
 
       // this.round = new ebg.counter();
       // this.round.create($("round"));
-      // this.round.setValue(gamedatas.round_number);
+      // this.round.setValue(gamedatas.roundNumber);
 
       // $("round_trump_name").textContent = this.getTrumpName(
       //   gamedatas.round_trump,
@@ -600,7 +600,7 @@ define([
 
     notif_newRound: function (notif) {
       // Update round' number
-      this.round.setValue(notif.args.round_number);
+      this.round.setValue(notif.args.roundNumber);
 
       for (const player_id in notif.args.scores) {
         this.tricks_need_counter[player_id].setValue(0);

@@ -18,20 +18,20 @@ class NextBet extends \Bga\GameFramework\States\GameState
 
     function onEnteringState(): string
     {
-        $num_of_bets = $this->game->getGameStateValue("num_of_bets");
-        $this->game->dump("num_of_bets:", $num_of_bets);
+        $numberOfContracts = $this->game->getGameStateValue(
+            "numberOfContracts"
+        );
+        $this->game->dump("numberOfContracts:", $numberOfContracts);
 
-        if ($num_of_bets == 4) {
+        if ($numberOfContracts == 4) {
             // All players have bet, start the trick phase
             $this->game->setGameStateValue(
-                "trumpColor",
-                $this->game->getGameStateValue("current_bid_shape")
+                "trumpSuit",
+                $this->game->getGameStateValue("currentBidSuit")
             );
 
             // Set the bid winner as the first player
-            $bid_winner = $this->game->getGameStateValue(
-                "current_bid_player_id"
-            );
+            $bid_winner = $this->game->getGameStateValue("currentBidPlayerId");
             $this->game->gamestate->changeActivePlayer($bid_winner);
 
             return NewTrick::class;

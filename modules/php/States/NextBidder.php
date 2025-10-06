@@ -18,7 +18,7 @@ class NextBidder extends \Bga\GameFramework\States\GameState
 
     function onEnteringState(): string
     {
-        $passes = $this->game->getGameStateValue("num_of_passes");
+        $passes = $this->game->getGameStateValue("numberOfPasses");
         $this->game->dump("num_passes_global:", $passes);
 
         $this->game->activeNextPlayer();
@@ -32,11 +32,11 @@ class NextBidder extends \Bga\GameFramework\States\GameState
                 [
                     "player_name" => $this->game->getActivePlayerName(),
                     "value_displayed" => $this->game->getGameStateValue(
-                        "current_bid"
+                        "currentBidValue"
                     ),
                     "color_displayed" =>
                         $this->game->colors[
-                            $this->game->getGameStateValue("current_bid_shape")
+                            $this->game->getGameStateValue("currentBidSuit")
                         ]["name"],
                 ]
             );
