@@ -269,16 +269,35 @@ define([
     //
     onUpdateActionButtons: function (stateName, args) {
       console.log("onUpdateActionButtons: " + stateName);
+      console.log("State Name", stateName);
+
+      const showPlayerBidSelection = () => {
+        this.removeActionButtons();
+        this.addActionButton("pass_button", _("Pass"), () =>
+          this.bgaPerformAction("actPass"),
+        );
+        // todo: improve the buttons UI for this
+        this.addActionButton("bid_button", _("Bid"), () => {
+          showSuitSelection();
+        });
+      };
+
+      const showSuitSelection = () => {
+        this.removeActionButtons();
+        // back button
+        this.addActionButton("back_button", "<-", () => {
+          showPlayerBidSelection();
+        });
+        // tood: add buttons to select a suit
+      };
 
       if (this.isCurrentPlayerActive()) {
         switch (stateName) {
-          case "playerBid":
-            this.addActionButton("pass_button", _("Pass"), () =>
-              this.ajaxcallwrapper("pass"),
-            );
-            this.addActionButton("bid_button", _("Bid"), "onPlayerBid");
+          case "PlayerBid":
+            showPlayerBidSelection();
             break;
-          case "playerBet":
+          // TODO: update that
+          case "PlayerBet":
             this.addActionButton("bet_button", _("Bet"), "onPlayerBet");
             break;
         }

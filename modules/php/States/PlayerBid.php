@@ -37,13 +37,13 @@ class PlayerBid extends \Bga\GameFramework\States\GameState
     // TODO: check if the logic is implemented in Game.php and move it here
 
     #[PossibleAction]
-    public function pass()
+    public function actPass()
     {
         throw new \BgaUserException("Not implemented: pass");
     }
 
     #[PossibleAction]
-    public function bid(int $value, int $suit)
+    public function actBid(int $value, int $suit)
     {
         throw new \BgaUserException(
             "Not implemented: bid with value ${value} and suit ${suit}",
