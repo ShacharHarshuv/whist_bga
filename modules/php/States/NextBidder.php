@@ -17,12 +17,13 @@ class NextBidder extends \Bga\GameFramework\States\GameState
     function onEnteringState(): string
     {
         $passes = $this->game->getGameStateValue("numberOfPasses");
-        $this->game->dump("num_passes_global:", $passes);
+        $this->game->dump("num_passes_global:", $passes); // todo: what is this?
 
         $this->game->activeNextPlayer();
 
         if ($passes == 3) {
-            $this->game->notifyAllPlayers(
+            // consider different logic
+            $this->game->notify->all(
                 "bid_won",
                 clienttranslate(
                     '${player_name} won the bid with ${value_displayed} ${color_displayed}'

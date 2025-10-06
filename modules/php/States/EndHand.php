@@ -20,14 +20,14 @@ class EndHand extends \Bga\GameFramework\States\GameState
         $players = $this->game->loadPlayersBasicInfos();
 
         foreach ($players as $player_id => $player) {
-            $sql = "SELECT tricks_taken, tricks_need FROM player WHERE player_id='$player_id'";
+            $sql = "SELECT tricks_taken, contract FROM player WHERE player_id='$player_id'";
             $player_data = $this->game->getObjectFromDB($sql);
 
             $tricks_taken = $player_data["tricks_taken"];
-            $tricks_need = $player_data["tricks_need"];
+            $contract = $player_data["contract"];
 
             $score = 0;
-            if ($tricks_taken == $tricks_need) {
+            if ($tricks_taken == $contract) {
                 // Success
                 if ($tricks_taken == 0) {
                     $score = 50; // Special bonus for taking exactly 0 when betting 0
@@ -36,7 +36,7 @@ class EndHand extends \Bga\GameFramework\States\GameState
                 }
             } else {
                 // Failure
-                $diff = abs($tricks_taken - $tricks_need);
+                $diff = abs($tricks_taken - $contract);
                 $score = -10 * $diff;
             }
 
@@ -57,7 +57,7 @@ class EndHand extends \Bga\GameFramework\States\GameState
         }
 
         // Reset tricks for next hand
-        $sql = "UPDATE player SET tricks_taken = 0, tricks_need = 0";
+        $sql = "UPDATE player SET tricks_taken = 0, contract = 0";
         $this->game->DbQuery($sql);
 
         // Check if game should end (after certain number of rounds)

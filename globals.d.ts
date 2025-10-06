@@ -33,6 +33,8 @@ interface Player {
   score: string;
   taken: string;
   tricks: string;
+  bid_value: number;
+  bid_suit: number;
 }
 
 interface GameDatas {

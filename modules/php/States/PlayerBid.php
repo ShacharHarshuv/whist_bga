@@ -37,9 +37,28 @@ class PlayerBid extends \Bga\GameFramework\States\GameState
     // TODO: check if the logic is implemented in Game.php and move it here
 
     #[PossibleAction]
-    public function actPass()
+    public function actPass(int $activePlayerId)
     {
-        throw new \BgaUserException("Not implemented: pass");
+        $this->game->DbQuery(
+            "UPDATE player SET bid_value=-2 WHERE player_id='$activePlayerId'"
+        );
+
+        // todo: we probably don't need this if we track for each player?
+        $passes = $this->game->getGameStateValue("numberOfPasses");
+        $this->game->setGameStateValue("numberOfPasses", $passes + 1);
+
+        $this->game->notify->all(
+            "playerPass",
+            clienttranslate('${player_name} passes'),
+            [
+                "player_id" => $activePlayerId,
+                "player_name" => $this->game->getPlayerNameById(
+                    $activePlayerId
+                ),
+            ]
+        );
+
+        return NextBidder::class;
     }
 
     #[PossibleAction]
@@ -64,6 +83,14 @@ class PlayerBid extends \Bga\GameFramework\States\GameState
             );
         }
 
+        $this->game->DbQuery("
+            UPDATE player
+            SET bid_value = $value,
+                bid_suit = $suit
+            WHERE player_id = $activePlayerId
+        ");
+
+        // todo: do we need those?
         $this->game->setGameStateValue("currentBidValue", $value);
         $this->game->setGameStateValue("currentBidSuit", $suit);
         $this->game->setGameStateValue("currentBidPlayerId", $activePlayerId);

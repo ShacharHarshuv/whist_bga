@@ -197,9 +197,16 @@ class Game extends \Bga\GameFramework\Table
 
         // Get information about players
         // Note: you can retrieve some extra field you added for "player" table in "dbmodel.sql" if you need it.
-        $sql =
-            "SELECT player_id id, player_score score, tricks_taken taken, tricks_need tricks FROM player ";
-        $result["players"] = $this->getCollectionFromDb($sql);
+        $result["players"] = $this->getCollectionFromDb(
+            "SELECT 
+                player_id id, 
+                player_score score, 
+                tricks_taken taken, 
+                `contract`,
+                bid_value,
+                bid_suit
+            FROM player"
+        );
 
         // Gather all information about current game situation (visible by player $current_player_id)
 
@@ -217,20 +224,21 @@ class Game extends \Bga\GameFramework\Table
 
         $result["round_trump"] = $this->getGameStateValue("currentBidSuit");
 
-        foreach ($result["players"] as $player_id => $player) {
-            $this->dump(
-                "player bet :",
-                $result["players"][$player_id]["tricks"]
-            );
-            $this->dump(
-                "player score :",
-                $result["players"][$player_id]["score"]
-            );
-            //$cardswon = $this->cards->getCardsInLocation('cardswon', $player_id);
-            //  foreach ($cardswon as $card) $score += $this->calculateCardPoints($card, $result['face_value_scoring'], $result['spades_scoring'], $result['jack_of_diamonds']);
-            //  $result['players'][$player_id]['tricks_taken'] = 0;
-            //	$result['players'][$player_id]['tricks_need'] = 0;
-        }
+        // todo: what is this for?
+        // foreach ($result["players"] as $player_id => $player) {
+        //     $this->dump(
+        //         "player bet :",
+        //         $result["players"][$player_id]["contract"]
+        //     );
+        //     $this->dump(
+        //         "player score :",
+        //         $result["players"][$player_id]["score"]
+        //     );
+        //     //$cardswon = $this->cards->getCardsInLocation('cardswon', $player_id);
+        //     //  foreach ($cardswon as $card) $score += $this->calculateCardPoints($card, $result['face_value_scoring'], $result['spades_scoring'], $result['jack_of_diamonds']);
+        //     //  $result['players'][$player_id]['tricks_taken'] = 0;
+        //     //	$result['players'][$player_id]['contract'] = 0;
+        // }
 
         return $result;
     }
@@ -348,28 +356,6 @@ class Game extends \Bga\GameFramework\Table
         return NextPlayer::class;
     }
 
-    function pass()
-    {
-        self::checkAction("pass");
-
-        $player_id = self::getActivePlayerId();
-        $sql = "UPDATE player SET player_bid_value=-2 WHERE player_id='$player_id'";
-        self::DbQuery($sql);
-
-        $passes = self::getGameStateValue("numberOfPasses");
-        self::setGameStateValue("numberOfPasses", $passes + 1);
-
-        self::notifyAllPlayers(
-            "playerPass",
-            clienttranslate('${player_name} passes'),
-            [
-                "player_name" => self::getActivePlayerName(),
-            ]
-        );
-
-        return NextBidder::class;
-    }
-
     function playerBet($bet_value)
     {
         $player_id = self::getActivePlayerId();
@@ -399,7 +385,7 @@ class Game extends \Bga\GameFramework\Table
         self::setGameStateValue("contractsSum", $sum_bets);
         self::setGameStateValue("numberOfContracts", $numberOfContracts);
 
-        $sql = "UPDATE player SET tricks_need=$bet_value WHERE player_id='$player_id'";
+        $sql = "UPDATE player SET contract=$bet_value WHERE player_id='$player_id'";
         self::DbQuery($sql);
 
         self::notifyAllPlayers(

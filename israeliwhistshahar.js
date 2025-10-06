@@ -49,7 +49,7 @@ define([
 
       // TODO: implement the UI for the tricks
       // this.tricks_counter = {};
-      // this.tricks_need_counter = {};
+      // this.contract_counter = {};
     },
 
     /**
@@ -63,165 +63,20 @@ define([
 
       createPlayerHand(this, gamedatas.hand);
 
-      // // Setting up player boards
-      // for (const player_id in gamedatas.players) {
-      //   const player = gamedatas.players[player_id];
-      //   // TODO: Setting up players boards if needed
-      //   this.tricks_counter[player_id] = new ebg.counter();
-      //   this.tricks_counter[player_id].create($("tricks_" + player_id));
-      //   this.tricks_counter[player_id].setValue(parseInt(player.taken));
+      createPlayersPanels(gamedatas.players, (playerId) =>
+        this.getPlayerPanelElement(playerId),
+      );
 
-      //   this.tricks_need_counter[player_id] = new ebg.counter();
-      //   this.tricks_need_counter[player_id].create(
-      //     $("tricks_need_" + player_id),
-      //   );
-      //   this.tricks_need_counter[player_id].setValue(parseInt(player.tricks));
-      // }
+      for (const playerId in gamedatas.players) {
+        const player = gamedatas.players[playerId];
+        updatePlayerBid(playerId, player.bid_value, player.bid_suit);
+      }
 
-      // // Player hand
-      // this.playerHand = new ebg.stock(); // new stock object for hand
-      // this.playerHand.create(
-      //   this,
-      //   $("myhand"),
-      //   this.cardwidth,
-      //   this.cardheight,
-      // );
-
-      // this.playerHand.image_items_per_row = 13; // 13 images per row
-
-      // this.round = new ebg.counter();
-      // this.round.create($("round"));
-      // this.round.setValue(gamedatas.roundNumber);
-
-      // $("round_trump_name").textContent = this.getTrumpName(
-      //   gamedatas.round_trump,
-      // );
-
-      // // Create cards types:
-      // for (let color = 1; color <= 4; color++) {
-      //   for (let value = 2; value <= 14; value++) {
-      //     // Build card type id
-      //     const card_type_id = this.getCardUniqueId(color, value);
-      //     this.playerHand.addItemType(
-      //       card_type_id,
-      //       card_type_id,
-      //       g_gamethemeurl + "img/cards.jpg",
-      //       card_type_id,
-      //     );
-      //   }
-      // }
-
-      // // Cards in player's hand
-      // for (const i in this.gamedatas.hand) {
-      //   const card = this.gamedatas.hand[i];
-      //   const color = card.type;
-      //   const value = card.type_arg;
-      //   this.playerHand.addToStockWithId(
-      //     this.getCardUniqueId(color, value),
-      //     card.id,
-      //   );
-      // }
-
-      // // Cards played on table
-      // for (let i in this.gamedatas.cardsontable) {
-      //   const card = this.gamedatas.cardsontable[i];
-      //   const color = card.type;
-      //   const value = card.type_arg;
-      //   const player_id = card.location_arg;
-      //   this.playCardOnTable(player_id, color, value, card.id);
-      // }
-
-      // dojo.connect(
-      //   this.playerHand,
-      //   "onChangeSelection",
-      //   this,
-      //   "onPlayerHandSelectionChanged",
-      // );
-      // // Setup game notifications to handle (see "setupNotifications" method below)
-      // this.setupNotifications();
+      // Setup game notifications to handle (see "setupNotifications" method below)
+      this.setupNotifications();
 
       console.log("Ending game setup");
     },
-
-    // todo: remove
-    //     createGameAreaHTML: function (gamedatas) {
-    //         // Create the main game area structure
-    //         const gameArea = this.getGameAreaElement();
-
-    //         // Create player tables for each player
-    //         const playerPositions = ['S', 'W', 'N', 'E']; // South, West, North, East
-    //         const playerIds = Object.keys(gamedatas.players);
-
-    //         for (const i = 0; i < playerIds.length; i++) {
-    //             const player_id = playerIds[i];
-    //             const position = playerPositions[i];
-    //             const player = gamedatas.players[player_id];
-
-    //             const playerTableHTML = `
-    //       <div id="playertable_${player_id}" class="playertable playertable_${position}">
-    //         <div class="playertablename" style="color:#${player.color}">
-    //           ${player.name} (${position})
-    //         </div>
-    //         <div id="playertablecard_${player_id}" class="playertablecard"></div>
-    //         <div class="playertablecounter">
-    //           <span class="tricks_label">Tricks:</span>
-    //           <span id="tricks_${player_id}">0</span>
-    //           <span class="tricks_need_label">Need:</span>
-    //           <span id="tricks_need_${player_id}">0</span>
-    //         </div>
-    //       </div>
-    //     `;
-    //             gameArea.insertAdjacentHTML('beforeend', playerTableHTML);
-    //         }
-
-    //         // Create round info section
-    //         const roundInfoHTML = `
-    //     <div id="round_info" class="round_info">
-    //       <div class="round_info_item">
-    //         <span class="round_label">Round:</span>
-    //         <span id="round">1</span>
-    //       </div>
-    //       <div class="round_info_item">
-    //         <span class="trump_label">Trump:</span>
-    //         <span id="round_trump_name">-</span>
-    //       </div>
-    //     </div>
-    //   `;
-    //         gameArea.insertAdjacentHTML('beforeend', roundInfoHTML);
-
-    //         // Create bid info form
-    //         const bidInfoHTML = `
-    //     <div id="bid_info" class="bid_info" style="display: none;">
-    //       <div class="bid_form">
-    //         <label for="bid_value">Bid Value:</label>
-    //         <input type="number" id="bid_value" min="5" max="13" value="5">
-    //         <label for="bid_shape">Shape:</label>
-    //         <select id="bid_shape">
-    //           <option value="1">Clubs</option>
-    //           <option value="2">Diamonds</option>
-    //           <option value="3">Hearts</option>
-    //           <option value="4">Spades</option>
-    //         </select>
-    //       </div>
-    //     </div>
-    //   `;
-    //         gameArea.insertAdjacentHTML('beforeend', bidInfoHTML);
-
-    //         // Create my hand section
-    //         const myHandHTML = `
-    //     <div id="myhand_wrap" class="whiteblock">
-    //       <h3>My hand</h3>
-    //       <div id="myhand"></div>
-    //     </div>
-    //   `;
-    //         gameArea.insertAdjacentHTML('beforeend', myHandHTML);
-
-    //         // Define the card template as a JavaScript template
-    //         this.jstpl_cardontable = `
-    //     <div class="cardontable" id="cardontable_\${player_id}" style="background-position:-\${x}px -\${y}px">
-    //     </div>
-    //   `;
-    //     },
 
     ///////////////////////////////////////////////////
     //// Game & client states
@@ -284,7 +139,7 @@ define([
     },
 
     // onUpdateActionButtons: in this method you can manage "action buttons" that are displayed in the
-    //                        action status bar (ie: the HTML links in the status bar).
+    //                        action status "UPDATE player SET bid_value=-2 WHERE player_id='$activePlayerId'" (ie: the HTML links in the status bar).
     //
     onUpdateActionButtons: function (stateName, args) {
       console.log("onUpdateActionButtons: " + stateName);
@@ -319,7 +174,6 @@ define([
          * @param {number} suit
          */
         const valueSelection = (suit) => {
-          const suitEmoji = suits[suit].emoji;
           this.removeActionButtons();
           createPassButton();
           this.statusBar.addActionButton("←", () => suitSelection(), {
@@ -327,7 +181,7 @@ define([
           });
           for (let value = 5; value <= 13; value++) {
             this.statusBar.addActionButton(
-              value + suitEmoji,
+              formatBid(value, suit),
               () => {
                 this.bgaPerformAction("actBid", { value, suit });
               },
@@ -366,46 +220,20 @@ define([
       }
     },
 
-    onPlayerBid: function () {
-      const action = "bid";
-      if (!this.checkAction(action)) return;
-      const bidValue = $("bid_value").value;
-      const shape = $("shape").value;
-      // // Check the number of selected items
-      // const selected_cards = this.playerHand.getSelectedItems();
-      // if (selected_cards.length !== 3) {
-      //     this.showMessage(_('You must select exactly 3 cards'), "error");
-      //     return;
-      // }
-      //
-      // // Get card ids
-      // let card_ids = '';
-      // for (let i in selected_cards) card_ids += selected_cards[i].id + ';';
-      //
-      // // Give selected cards
-      // this.playerHand.unselectAll();
-      this.ajaxcall(
-        "/" + this.game_name + "/" + this.game_name + "/" + action + ".html",
-        { lock: true, bid_value: bidValue, shape: shape },
-        this,
-        function (result) {},
-        function (is_error) {},
-      );
-    },
+    // todo: we should change this
+    // onPlayerBet: function () {
+    //   const action = "bet";
+    //   if (!this.checkAction(action)) return;
+    //   const bidValue = $("bid_value").value;
 
-    onPlayerBet: function () {
-      const action = "bet";
-      if (!this.checkAction(action)) return;
-      const bidValue = $("bid_value").value;
-
-      this.ajaxcall(
-        "/" + this.game_name + "/" + this.game_name + "/" + action + ".html",
-        { lock: true, bid_value: bidValue },
-        this,
-        function (result) {},
-        function (is_error) {},
-      );
-    },
+    //   this.ajaxcall(
+    //     "/" + this.game_name + "/" + this.game_name + "/" + action + ".html",
+    //     { lock: true, bid_value: bidValue },
+    //     this,
+    //     function (result) {},
+    //     function (is_error) {},
+    //   );
+    // },
 
     ///////////////////////////////////////////////////
     //// Utility methods
@@ -417,38 +245,7 @@ define([
 
         */
 
-    ajaxcallwrapper: function (action, args, handler) {
-      if (!args) args = []; // this allows to skip args parameter for action which do not require them
-
-      args.lock = true; // this allows to avoid rapid action clicking which can cause race condition on server
-
-      if (this.checkAction(action)) {
-        // this does all the proper check that player is active and action is declared
-        this.ajaxcall(
-          "/" + this.game_name + "/" + this.game_name + "/" + action + ".html",
-          args, // this is mandatory fluff
-          this,
-          (result) => {}, // success result handler is empty - it is never needed
-          handler,
-        ); // this is real result handler - it called both on success and error, its is optional param - you rarely need it
-      }
-    },
-
-    getTrumpName: function (shapeId) {
-      if (shapeId == 1) {
-        return "Club";
-      }
-      if (shapeId == 2) {
-        return "Diamond";
-      }
-      if (shapeId == 3) {
-        return "Heart";
-      }
-      if (shapeId == 4) {
-        return "Spade";
-      }
-    },
-
+    // todo: this should be somewhat rewritten
     playCardOnTable: function (player_id, color, value, card_id) {
       // player_id => direction
       dojo.place(
@@ -490,51 +287,7 @@ define([
     ///////////////////////////////////////////////////
     //// Player's action
 
-    /*
-
-            Here, you are defining methods to handle player's action (ex: results of mouse click on
-            game objects).
-
-            Most of the time, these methods:
-            _ check the action is possible at this game state.
-            _ make a call to the game server
-
-        */
-
-    /* Example:
-
-        onMyMethodToCall1: function( evt )
-        {
-            console.log( 'onMyMethodToCall1' );
-
-            // Preventing default browser reaction
-            dojo.stopEvent( evt );
-
-            // Check that this action is possible (see "possibleactions" in states.inc.php)
-            if( ! this.checkAction( 'myAction' ) )
-            {   return; }
-
-            this.ajaxcall( "/israeliwhistshahar/israeliwhistshahar/myAction.html", {
-                                                                    lock: true,
-                                                                    myArgument1: arg1,
-                                                                    myArgument2: arg2,
-                                                                    ...
-                                                                 },
-                         this, function( result ) {
-
-                            // What to do after the server call if it succeeded
-                            // (most of the time: nothing)
-
-                         }, function( is_error) {
-
-                            // What to do after the server call in anyway (success or failure)
-                            // (most of the time: nothing)
-
-                         } );
-        },
-
-        */
-
+    // todo: this should be rewritten (use bgaPerformAction instead of ajax)
     onPlayerHandSelectionChanged: function () {
       const items = this.playerHand.getSelectedItems();
 
@@ -582,35 +335,8 @@ define([
 
         */
     setupNotifications: function () {
-      console.log("notifications subscriptions setup");
-
-      dojo.subscribe("newHand", this, "notif_newHand");
-      dojo.subscribe("playCard", this, "notif_playCard");
-
-      dojo.subscribe("trickWin", this, "notif_trickWin");
+      this.bgaSetupPromiseNotifications();
       this.notifqueue.setSynchronous("trickWin", 1000);
-      dojo.subscribe(
-        "giveAllCardsToPlayer",
-        this,
-        "notif_giveAllCardsToPlayer",
-      );
-      dojo.subscribe("points", this, "notif_points");
-      dojo.subscribe("newRound", this, "notif_newRound");
-      dojo.subscribe("playerBid", this, "notif_playerBid");
-      dojo.subscribe("playerBet", this, "notif_playerBet");
-      dojo.subscribe("pass", this, "notif_pass");
-
-      // TODO: here, associate your game notifications with local methods
-
-      // Example 1: standard notification handling
-      // dojo.subscribe( 'cardPlayed', this, "notif_cardPlayed" );
-
-      // Example 2: standard notification handling + tell the user interface to wait
-      //            during 3 seconds after calling the method in order to let the players
-      //            see what is happening in the game.
-      // dojo.subscribe( 'cardPlayed', this, "notif_cardPlayed" );
-      // this.notifqueue.setSynchronous( 'cardPlayed', 3000 );
-      //
     },
 
     notif_newHand: function (notif) {
@@ -638,7 +364,15 @@ define([
       );
     },
 
-    notif_pass: function (notif) {},
+    // todo: we should probably do something
+    notif_playerPass: function (notif) {
+      updatePlayerBid(notif.player_id, -2, 0);
+    },
+
+    // todo: we should probably do something
+    notif_playerBid: function (notif) {
+      updatePlayerBid(notif.player_id, notif.value, notif.suit);
+    },
 
     notif_trickWin: function (notif) {
       // We do nothing here (just wait in order players can view the 4 cards played before they're gone.
@@ -672,37 +406,16 @@ define([
       this.round.setValue(notif.args.roundNumber);
 
       for (const player_id in notif.args.scores) {
-        this.tricks_need_counter[player_id].setValue(0);
+        this.contract_counter[player_id].setValue(0);
         this.tricks_counter[player_id].setValue(0);
       }
     },
 
     notif_playerBet: function (notif) {
-      this.tricks_need_counter[notif.args.player_id].setValue(
+      this.contract_counter[notif.args.player_id].setValue(
         notif.args.value_displayed,
       );
     },
-
-    notif_playerBid: function (notif) {
-      $("round_trump_name").textContent = notif.args.color_displayed;
-    },
-
-    // TODO: from this point and below, you can write your game notifications handling methods
-
-    /*
-        Example:
-
-        notif_cardPlayed: function( notif )
-        {
-            console.log( 'notif_cardPlayed' );
-            console.log( notif );
-
-            // Note: notif.args contains the arguments specified during you "notifyAllPlayers" / "notifyPlayer" PHP call
-
-            // TODO: play the card in the user interface.
-        },
-
-        */
   });
 });
 
@@ -796,6 +509,61 @@ function createPlayerHand(page, hand) {
 }
 
 /**
+ * @param {GameDatas["players"]} players
+ * @param {(playerId: number | string) => HTMLElement} getPlayerPanelElement
+ */
+function createPlayersPanels(players, getPlayerPanelElement) {
+  // todo: extract to a function
+  for (const playerId in players) {
+    const player = players[playerId];
+    getPlayerPanelElement(playerId).insertAdjacentHTML(
+      "beforeend",
+      html`<div class="player-panel" id="player_panel_${playerId}">
+        <div id="bid"></div>
+      </div>`,
+    );
+  }
+}
+
+/**
+ *
+ * @param {number|string} playerId
+ * @param {number} bidValue
+ * @param {number} bidSuit
+ */
+function updatePlayerBid(playerId, bidValue, bidSuit) {
+  const getBidText = () => {
+    if (bidValue < 0) {
+      return html`<i>Passed<i></i></i>`;
+    } else if (bidValue == 0) {
+      return html``;
+    } else {
+      return html`<b>Bid:</b> ${formatBid(bidValue, bidSuit)}`;
+    }
+  };
+
+  updatePanelElement(playerId, "bid", getBidText());
+
+  // todo: consider rendering it in other places (like the table)
+}
+
+/**
+ *
+ * @param {number | string} playerId
+ * @param {string} innerId
+ * @param {string} newValue
+ */
+function updatePanelElement(playerId, innerId, newValue) {
+  const element = document.querySelector(
+    `#player_panel_${playerId} #${innerId}`,
+  );
+  if (!element) {
+    throw new Error(`Element not found: #player_panel_${playerId} #${innerId}`);
+  }
+  element.innerHTML = newValue;
+}
+
+/**
  * Get card unique identifier based on its suit and value
  * @param {number} suit - from 1 to 4
  * @param {number} value - from 2 to 14 (Ace)
@@ -823,3 +591,12 @@ function getSpriteSheetSuitIndex(logicalSuit) {
 
 const cardwidth = 72;
 const cardheight = 96;
+
+/**
+ *
+ * @param {number} bidValue
+ * @param {number} bidSuit
+ */
+function formatBid(bidValue, bidSuit) {
+  return bidValue + " " + suits[bidSuit].emoji;
+}
