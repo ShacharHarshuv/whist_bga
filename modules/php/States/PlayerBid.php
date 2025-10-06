@@ -63,6 +63,7 @@ class PlayerBid extends \Bga\GameFramework\States\GameState
             "playerPass",
             clienttranslate('${player_name} passes'),
             [
+                "player_id" => $activePlayerId,
                 "player_name" => $this->game->getPlayerNameById(
                     $activePlayerId
                 ),
