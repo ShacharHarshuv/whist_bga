@@ -179,6 +179,7 @@ define([
           this.statusBar.addActionButton("←", () => suitSelection(), {
             color: "secondary",
           });
+          console.log("highestBid", highestBid);
           const minimumBid = highestBid
             ? highestBid.value + (suit > highestBid.suit ? 0 : 1)
             : 5;
@@ -548,8 +549,9 @@ function updatePlayerBid(playerId, bidValue, bidSuit) {
   updatePanelElement(playerId, "bid", getBidText());
 
   if (
-    !highestBid ||
-    isBidHigher(highestBid.suit, highestBid.value, bidSuit, bidValue)
+    bidValue > 0 &&
+    (!highestBid ||
+      isBidHigher(highestBid.suit, highestBid.value, bidSuit, bidValue))
   ) {
     highestBid = {
       value: +bidValue,
@@ -612,7 +614,7 @@ const cardheight = 96;
  * @param {number} bidSuit
  */
 function formatBid(bidValue, bidSuit) {
-  return bidValue + " " + suits[bidSuit].emoji;
+  return bidValue + suits[bidSuit].emoji;
 }
 function isBidHigher(currentBidSuit, currentBidValue, newBidSuit, newBidValue) {
   return newBidValue >= currentBidValue + (newBidSuit > currentBidSuit ? 1 : 0);

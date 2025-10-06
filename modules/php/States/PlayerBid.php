@@ -32,16 +32,22 @@ class PlayerBid extends \Bga\GameFramework\States\GameState
 
     public function getArgs(): array
     {
-        $currentBidValue = $this->game->getGameStateValue("currentBidValue");
-        $currentBidSuit = $this->game->getGameStateValue("currentBidSuit");
+        $currentBidValue = (int) $this->game->getGameStateValue(
+            "currentBidValue"
+        );
+        $currentBidSuit = (int) $this->game->getGameStateValue(
+            "currentBidSuit"
+        );
 
         return [
             "currentBidDisplay" =>
                 $currentBidValue == 0
                     ? ""
                     : "(Current bid: " .
-                        $this->game->values_label[$currentBidValue] . // todo: we need to reuse this?
-                        $this->game->suits[$currentBidSuit]["emoji"] .
+                        $this->game->formatBid(
+                            $currentBidValue,
+                            $currentBidSuit
+                        ) .
                         ")",
         ];
     }
@@ -54,10 +60,6 @@ class PlayerBid extends \Bga\GameFramework\States\GameState
         $this->game->DbQuery(
             "UPDATE player SET bid_value=-2 WHERE player_id='$activePlayerId'"
         );
-
-        // todo: we probably don't need this if we track for each player?
-        $passes = $this->game->getGameStateValue("numberOfPasses");
-        $this->game->setGameStateValue("numberOfPasses", $passes + 1);
 
         $this->game->notify->all(
             "playerPass",
@@ -106,12 +108,11 @@ class PlayerBid extends \Bga\GameFramework\States\GameState
         $this->game->setGameStateValue("currentBidValue", $value);
         $this->game->setGameStateValue("currentBidSuit", $suit);
         $this->game->setGameStateValue("currentBidPlayerId", $activePlayerId);
-        $this->game->setGameStateValue("numberOfPasses", 0);
 
         // And notify
         $this->game->notify->all(
             "playerBid",
-            clienttranslate('${player_name} bids ${bidDisplay}'),
+            clienttranslate('${player_name} bids ${bid_displayed}'),
             [
                 "player_id" => $activePlayerId,
                 "player_name" => $this->game->getPlayerNameById(
@@ -119,9 +120,7 @@ class PlayerBid extends \Bga\GameFramework\States\GameState
                 ),
                 "suit" => $suit,
                 "value" => $value,
-                "bidDisplay" =>
-                    $this->game->values_label[$value] .
-                    $this->game->suits[$suit]["emoji"],
+                "bid_displayed" => $this->game->formatBid($value, $suit),
             ]
         );
 

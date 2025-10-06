@@ -31,8 +31,6 @@ class Game extends \Bga\GameFramework\Table
             "trickSuit" => 11,
             "trumpSuit" => 12,
             "roundNumber" => 13,
-            "numberOfPasses" => 14, // is that the best way to track it? Perhaps we should track who passed instead?
-            // As above, perhaps it's better to track the lastest bids for all players so we can display it? For now let's go with this
             "currentBidValue" => 15,
             "currentBidSuit" => 16,
             "currentBidPlayerId" => 17,
@@ -138,9 +136,6 @@ class Game extends \Bga\GameFramework\Table
 
         //  Set current trump color to zero (= no trump color)
         $this->setGameStateInitialValue("roundNumber", 1);
-
-        //  Set current trump color to zero (= no trump color)
-        $this->setGameStateInitialValue("numberOfPasses", 0);
 
         $this->setGameStateInitialValue("currentBidValue", 0);
 
@@ -263,9 +258,10 @@ class Game extends \Bga\GameFramework\Table
     //////////// Utility functions
     ////////////
 
-    /*
-        In this space, you can put any utility methods useful for your game logic
-    */
+    function formatBid(int $value, int $suit): string
+    {
+        return $this->values_label[$value] . $this->suits[$suit]["emoji"];
+    }
 
     function checkPlayableCards($player_id): array
     {

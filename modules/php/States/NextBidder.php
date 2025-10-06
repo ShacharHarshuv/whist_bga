@@ -16,32 +16,43 @@ class NextBidder extends \Bga\GameFramework\States\GameState
 
     function onEnteringState(): string
     {
-        $passes = $this->game->getGameStateValue("numberOfPasses");
-        $this->game->dump("num_passes_global:", $passes); // todo: what is this?
-
-        $this->game->activeNextPlayer();
+        $bids = $this->game->getCollectionFromDb(
+            "SELECT player_id, bid_value, bid_suit FROM player"
+        );
+        $passes = count(
+            array_filter($bids, fn($bid) => $bid["bid_value"] == -2)
+        );
+        $this->game->dump("num_passes_from_db:", $passes);
 
         if ($passes == 3) {
-            // consider different logic
+            // Bid Won
             $this->game->notify->all(
-                "bid_won",
+                "bidWon",
                 clienttranslate(
-                    '${player_name} won the bid with ${value_displayed} ${color_displayed}'
+                    '${player_name} won the bid with ${bid_displayed}'
                 ),
+                // todo: format this
                 [
                     "player_name" => $this->game->getActivePlayerName(),
                     "value_displayed" => $this->game->getGameStateValue(
                         "currentBidValue"
                     ),
-                    "color_displayed" => $this->game->_(
-                        $this->game->suits[
-                            $this->game->getGameStateValue("currentBidSuit")
-                        ]["name"]
+                    "bid_displayed" => $this->game->formatBid(
+                        (int) $this->game->getGameStateValue("currentBidValue"),
+                        (int) $this->game->getGameStateValue("currentBidSuit")
                     ),
                 ]
             );
+
+            $this->game->gamestate->changeActivePlayer(
+                $this->game->getGameStateValue("currentBidPlayerId")
+            );
             return PlayerBet::class;
         } else {
+            $nextPlayerId = $this->game->activeNextPlayer();
+            while ($bids[$nextPlayerId]["bid_value"] == -2) {
+                $nextPlayerId = $this->game->activeNextPlayer();
+            }
             return PlayerBid::class;
         }
     }

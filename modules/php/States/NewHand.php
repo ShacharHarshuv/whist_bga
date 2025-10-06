@@ -37,12 +37,14 @@ class NewHand extends \Bga\GameFramework\States\GameState
         }
 
         // reset globals
-        $this->game->setGameStateValue("numberOfPasses", 0);
         $this->game->setGameStateValue("currentBidValue", 0);
         $this->game->setGameStateValue("currentBidSuit", 0);
         $this->game->setGameStateValue("currentBidPlayerId", 0);
         $this->game->setGameStateValue("contractsSum", 0);
         $this->game->setGameStateValue("numberOfContracts", 0);
+
+        // Reset all players' bid values for the new hand
+        $this->game->DbQuery("UPDATE player SET bid_value = 0, bid_suit = 0");
 
         return PlayerBid::class;
     }
