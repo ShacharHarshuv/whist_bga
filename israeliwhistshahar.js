@@ -61,6 +61,16 @@ define([
 
       createPlayerHand(this, gamedatas.hand);
 
+      // Cards played on table
+      // todo: can we use "of"?
+      for (let i in this.gamedatas.cardsontable) {
+        var card = this.gamedatas.cardsontable[i];
+        var color = card.type;
+        var value = card.type_arg;
+        var player_id = card.location_arg;
+        this.playCardOnTable(player_id, color, value, card.id);
+      }
+
       createPlayersPanels(gamedatas.players, (playerId) =>
         this.getPlayerPanelElement(playerId),
       );
@@ -235,14 +245,7 @@ define([
     // todo: this should be somewhat rewritten
     playCardOnTable: function (player_id, color, value, card_id) {
       // player_id => direction
-      dojo.place(
-        this.format_block("jstpl_cardontable", {
-          x: cardwidth * (value - 2),
-          y: cardheight * (getSpriteSheetSuitIndex(color) - 1),
-          player_id: player_id,
-        }),
-        "playertablecard_" + player_id,
-      );
+      this.addTableCard(value, color, player_id, player_id);
 
       if (player_id != this.player_id) {
         // Some opponent played a card
@@ -260,7 +263,7 @@ define([
             "cardontable_" + player_id,
             "myhand_item_" + card_id,
           );
-          this.playerHand.removeFromStockById(card_id);
+          playerHand.removeFromStockById(card_id);
         }
       }
 
@@ -269,6 +272,22 @@ define([
         "cardontable_" + player_id,
         "playertablecard_" + player_id,
       ).play();
+    },
+
+    // todo: this doesn't seem like the most ideal way of doing it?... Seems quite duplicative from other things we developed
+    addTableCard(value, suit, card_player_id, playerTableId) {
+      const x = value - 2;
+      const y = suit - 1;
+      document
+        .getElementById("playertablecard_" + playerTableId)
+        .insertAdjacentHTML(
+          "beforeend",
+          html`<div
+            class="card cardontable"
+            id="cardontable_${card_player_id}"
+            style="background-position:-${x}00% -${y}00%"
+          ></div>`,
+        );
     },
 
     ///////////////////////////////////////////////////
@@ -314,13 +333,13 @@ define([
 
     notif_newHand: function (notif) {
       // We received a new full hand of 13 cards.
-      this.playerHand.removeAll();
+      playerHand.removeAll();
 
-      for (const i in notif.args.cards) {
-        const card = notif.args.cards[i];
+      for (const i in notif.cards) {
+        const card = notif.cards[i];
         const color = card.type;
         const value = card.type_arg;
-        this.playerHand.addToStockWithId(
+        playerHand.addToStockWithId(
           this.getCardUniqueId(color, value),
           card.id,
         );
@@ -330,10 +349,10 @@ define([
     notif_playCard: function (notif) {
       // Play a card on the table
       this.playCardOnTable(
-        notif.args.player_id,
-        notif.args.color,
-        notif.args.value,
-        notif.args.card_id,
+        notif.player_id,
+        notif.color,
+        notif.value,
+        notif.card_id,
       );
     },
 
@@ -356,12 +375,12 @@ define([
 
     notif_trickWin: function (notif) {
       // We do nothing here (just wait in order players can view the 4 cards played before they're gone.
-      this.tricks_counter[notif.args.player_id].incValue(1);
+      this.tricks_counter[notif.player_id].incValue(1);
     },
 
     notif_giveAllCardsToPlayer: function (notif) {
       // Move all cards on table to given table, then destroy them
-      const winner_id = notif.args.player_id;
+      const winner_id = notif.player_id;
       for (const player_id in this.gamedatas.players) {
         const anim = this.slideToObject(
           "cardontable_" + player_id,
@@ -376,16 +395,16 @@ define([
 
     notif_points: function (notif) {
       // Update players' scores
-      for (const player_id in notif.args.scores) {
-        this.scoreCtrl[player_id].toValue(notif.args.scores[player_id]);
+      for (const player_id in notif.scores) {
+        this.scoreCtrl[player_id].toValue(notif.scores[player_id]);
       }
     },
 
     notif_newRound: function (notif) {
       // Update round' number
-      this.round.setValue(notif.args.roundNumber);
+      this.round.setValue(notif.roundNumber);
 
-      for (const player_id in notif.args.scores) {
+      for (const player_id in notif.scores) {
         this.contract_counter[player_id].setValue(0);
         this.tricks_counter[player_id].setValue(0);
       }
