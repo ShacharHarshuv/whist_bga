@@ -11,7 +11,15 @@ class PlayerBid extends \Bga\GameFramework\States\GameState
 {
     public function __construct(protected Game $game)
     {
-        parent::__construct($game, id: 20, type: StateType::ACTIVE_PLAYER);
+        parent::__construct(
+            $game,
+            id: 20,
+            type: StateType::ACTIVE_PLAYER,
+            description: clienttranslate(
+                '${actplayer} must make a bid or pass'
+            ),
+            descriptionMyTurn: clienttranslate('${you} must make a bid or pass')
+        );
     }
 
     public function zombie(int $playerId)

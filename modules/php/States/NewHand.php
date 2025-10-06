@@ -32,12 +32,12 @@ class NewHand extends \Bga\GameFramework\States\GameState
         foreach ($players as $player_id => $player) {
             $cards = $this->game->deck->pickCards(13, "deck", $player_id);
             // Notify player about his cards
-            $this->game->notifyPlayer($player_id, "newHand", "", [
+            $this->game->notify->player($player_id, "newHand", "", [
                 "cards" => $cards,
             ]);
         }
 
-        // init globals
+        // reset globals
         $this->game->setGameStateValue("numberOfPasses", 0);
         $this->game->setGameStateValue("currentBidValue", 0);
         $this->game->setGameStateValue("currentBidSuit", 0);

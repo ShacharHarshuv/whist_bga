@@ -193,10 +193,7 @@ class Game extends \Bga\GameFramework\Table
         // Initialize player scores
         $this->DbQuery("UPDATE player SET player_score = 0");
 
-        // Activate first player (which is in general a good idea :) )
         $this->activeNextPlayer();
-
-        /************ End of the game initialization *****/
 
         return NewHand::class;
     }
