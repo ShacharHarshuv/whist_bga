@@ -2,11 +2,11 @@
 
 declare(strict_types=1);
 
-namespace Bga\Games\IsraeliWhistShahar\States;
+namespace Bga\Games\israeliwhistshahar\States;
 
 use Bga\GameFramework\StateType;
-use Bga\Games\IsraeliWhistShahar\Game;
-use Bga\Games\IsraeliWhistShahar\States\NextPlayer;
+use Bga\Games\israeliwhistshahar\Game;
+use Bga\Games\israeliwhistshahar\States\NextPlayer;
 
 class PlayCard extends \Bga\GameFramework\States\GameState
 {

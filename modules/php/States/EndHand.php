@@ -2,12 +2,12 @@
 
 declare(strict_types=1);
 
-namespace Bga\Games\IsraeliWhistShahar\States;
+namespace Bga\Games\israeliwhistshahar\States;
 
 use Bga\GameFramework\StateType;
-use Bga\Games\IsraeliWhistShahar\Game;
+use Bga\Games\israeliwhistshahar\Game;
 // todo: do we need these imports? In the tutorial it worked without them
-use Bga\Games\IsraeliWhistShahar\States\NewHand;
+use Bga\Games\israeliwhistshahar\States\NewHand;
 
 class EndHand extends \Bga\GameFramework\States\GameState
 {

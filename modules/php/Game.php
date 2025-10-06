@@ -2,13 +2,13 @@
 
 declare(strict_types=1);
 
-namespace Bga\Games\IsraeliWhistShahar;
+namespace Bga\Games\israeliwhistshahar;
 
-use Bga\Games\IsraeliWhistShahar\States\NewHand;
-use Bga\Games\IsraeliWhistShahar\States\NextPlayer;
-use Bga\Games\IsraeliWhistShahar\States\NextBidder;
-use Bga\Games\IsraeliWhistShahar\States\NextBet;
-use Bga\Games\IsraeliWhistShahar\States\ZombiePass;
+use Bga\Games\israeliwhistshahar\States\NewHand;
+use Bga\Games\israeliwhistshahar\States\NextPlayer;
+use Bga\Games\israeliwhistshahar\States\NextBidder;
+use Bga\Games\israeliwhistshahar\States\NextBet;
+use Bga\Games\israeliwhistshahar\States\ZombiePass;
 
 /*
  1 = Spades

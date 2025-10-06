@@ -2,10 +2,11 @@
 
 declare(strict_types=1);
 
-namespace Bga\Games\IsraeliWhistShahar\States;
+namespace Bga\Games\israeliwhistshahar\States;
 
 use Bga\GameFramework\StateType;
-use Bga\Games\IsraeliWhistShahar\Game;
+use Bga\Games\israeliwhistshahar\Game;
+use Bga\GameFramework\States\PossibleAction;
 
 class PlayerBid extends \Bga\GameFramework\States\GameState
 {
@@ -31,5 +32,19 @@ class PlayerBid extends \Bga\GameFramework\States\GameState
                 "player_id" => $playerId,
             ]
         );
+    }
+
+    // TODO: check if the logic is implemented in Game.php and move it here
+
+    #[PossibleAction]
+    public function pass()
+    {
+        throw new \BgaUserException("Not implemented: pass");
+    }
+
+    #[PossibleAction]
+    public function bid(int $value, int $suit)
+    {
+        throw new \BgaUserException("Not implemented: bid");
     }
 }

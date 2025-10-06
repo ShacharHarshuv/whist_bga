@@ -2,13 +2,13 @@
 
 declare(strict_types=1);
 
-namespace Bga\Games\IsraeliWhistShahar\States;
+namespace Bga\Games\israeliwhistshahar\States;
 
 use Bga\GameFramework\StateType;
-use Bga\Games\IsraeliWhistShahar\Game;
-use Bga\Games\IsraeliWhistShahar\States\EndHand;
-use Bga\Games\IsraeliWhistShahar\States\NextTrick;
-use Bga\Games\IsraeliWhistShahar\States\PlayerTurn;
+use Bga\Games\israeliwhistshahar\Game;
+use Bga\Games\israeliwhistshahar\States\EndHand;
+use Bga\Games\israeliwhistshahar\States\NextTrick;
+use Bga\Games\israeliwhistshahar\States\PlayerTurn;
 
 class NextPlayer extends \Bga\GameFramework\States\GameState
 {
