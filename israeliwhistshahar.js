@@ -71,7 +71,7 @@ define([
       } else {
         for (const playerId in gamedatas.players) {
           const player = gamedatas.players[playerId];
-          updatePlayerBid(playerId, player.bid_value, player.bid_suit);
+          updateHighestBidState(playerId, player.bid_value, player.bid_suit);
           updatePlayerContract(playerId, player.contract);
         }
       }
@@ -184,6 +184,14 @@ define([
           }
         })();
 
+        const disallowed = (() => {
+          if (totalContracts != 3) {
+            return null;
+          }
+
+          return 13 - contractsSum;
+        })();
+
         const max = 13;
         for (let value = min; value <= max; value++) {
           this.statusBar.addActionButton(
@@ -191,6 +199,7 @@ define([
             () => this.bgaPerformAction("actDeclare", { value }),
             {
               color: "secondary",
+              disabled: value == disallowed,
             },
           );
         }
@@ -553,11 +562,18 @@ function updateHighestBidState(playerId, bidValue, bidSuit) {
  * @param {number|string} value
  */
 function updatePlayerContract(playerId, value) {
+  console.log("updatePlayerContract", playerId, value);
   if (+value < 0) {
     updatePanelElement(playerId, "contract", html``);
+    return;
   }
+  contractsSum += +value;
+  totalContracts++;
   updatePanelElement(playerId, "contract", html`<b>Contract:</b> ${value}`);
 }
+
+let contractsSum = 0;
+let totalContracts = 0;
 
 /**
  *
