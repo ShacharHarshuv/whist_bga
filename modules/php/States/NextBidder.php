@@ -25,6 +25,8 @@ class NextBidder extends \Bga\GameFramework\States\GameState
         $this->game->dump("num_passes_from_db:", $passes);
 
         if ($passes == 3) {
+            $suit = $this->game->getGameStateValue("currentBidSuit");
+            $this->game->setGameStateValue("trumpSuit", $suit);
             // Bid Won
             $this->game->notify->all(
                 "bidWon",
@@ -41,6 +43,7 @@ class NextBidder extends \Bga\GameFramework\States\GameState
                         (int) $this->game->getGameStateValue("currentBidValue"),
                         (int) $this->game->getGameStateValue("currentBidSuit")
                     ),
+                    "suit" => $suit,
                 ]
             );
 

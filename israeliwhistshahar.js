@@ -54,7 +54,9 @@ define([
     setup: function (gamedatas) {
       console.log("Starting game setup", gamedatas);
 
-      // Create the main game area HTML structure
+      createTrumpIndication(this.getGameAreaElement());
+      updateTrumpSuit(gamedatas.round_trump);
+
       createTables(this.getGameAreaElement(), gamedatas.players);
 
       createPlayerHand(this, gamedatas.hand);
@@ -349,6 +351,7 @@ define([
       for (const playerId in this.gamedatas.players) {
         updatePlayerBid(playerId, 0, 0);
       }
+      updateTrumpSuit(notif.suit);
     },
 
     notif_trickWin: function (notif) {
@@ -633,3 +636,27 @@ function isBidHigher(currentBidSuit, currentBidValue, newBidSuit, newBidValue) {
  * }}
  */
 let highestBid = null;
+
+/**
+ * @param {HTMLElement} gameAreaElement
+ */
+function createTrumpIndication(gameAreaElement) {
+  gameAreaElement.insertAdjacentHTML(
+    "beforeend",
+    html`<div id="trump-indication"></div>`,
+  );
+}
+
+function updateTrumpSuit(newTrumpSuit) {
+  console.log("updateTrumpSuit", newTrumpSuit);
+  document.getElementById("trump-indication").innerHTML = (() => {
+    if (!+newTrumpSuit) {
+      return html``;
+    }
+
+    return html`
+      <b>👑 Trump: </b>
+      <span id="trump-indication-suit">${suits[+newTrumpSuit].emoji}</span>
+    `;
+  })();
+}

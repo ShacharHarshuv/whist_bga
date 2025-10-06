@@ -18,6 +18,7 @@
   position: relative;
   width: 710px;
   height: 340px;
+  margin: 0 auto;
 }
 
 .playertablename {
@@ -85,4 +86,10 @@
 
 .player-panel {
   padding: 8px;
+}
+
+#trump-indication {
+  text-align: center;
+  font-size: 2rem;
+  padding: 0.5em;
 }
