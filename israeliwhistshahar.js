@@ -718,11 +718,9 @@ function createPlayerHand(page, hand) {
   console.log("hand", hand);
   // add cards based on data
   for (const card of hand) {
-    console.log("card", card);
-    // var card = this.gamedatas.hand[i];
-    // var color = card.type;
-    // var value = card.type_arg;
-    // this.playerHand.addToStockWithId(cardId(color, value), card.id);
+    const suit = +card.type;
+    const value = +card.type_arg;
+    playerHand.addToStockWithId(cardId(suit, value), card.id);
   }
 
   return playerHand;

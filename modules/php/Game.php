@@ -84,11 +84,11 @@ class Game extends \Bga\GameFramework\Table
         $deck = $this->deckFactory->createDeck("card");
         $deck->init("card");
         $cards = [];
-        foreach ($this->suits as $color_id => $color) {
+        foreach ($this->suits as $suitId => $suit) {
             for ($value = 2; $value <= 14; $value++) {
                 //  2, 3, 4, ... K, A
                 $cards[] = [
-                    "type" => $color_id,
+                    "type" => $suitId,
                     "type_arg" => $value,
                     "nbr" => 1,
                 ];
