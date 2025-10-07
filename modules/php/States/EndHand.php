@@ -45,7 +45,7 @@ class EndHand extends \Bga\GameFramework\States\GameState
             $this->game->DbQuery($sql);
 
             // Notify about points
-            $this->game->notifyAllPlayers(
+            $this->notify->all(
                 "points",
                 clienttranslate('${player_name} scores ${points} points'),
                 [
@@ -62,13 +62,14 @@ class EndHand extends \Bga\GameFramework\States\GameState
 
         // Check if game should end (after certain number of rounds)
         $round = $this->game->getGameStateValue("roundNumber");
-        if ($round >= 13) {
+        $numberOfRounds = $this->game->numberOfRounds;
+        if ($round >= $numberOfRounds) {
             // Game ends after 13 rounds
             return 99; // todo: check this actually hands the game
         } else {
             // Next round
             $this->game->setGameStateValue("roundNumber", $round + 1);
-            $this->game->notifyAllPlayers(
+            $this->notify->all(
                 "newRound",
                 clienttranslate('Round ${roundNumber}'),
                 [

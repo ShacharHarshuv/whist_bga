@@ -41,4 +41,6 @@ interface IsraeliWhistGamedatas extends Gamedatas<IsraeliWhistPlayer> {
   bids: { [playerId: number]: number };
   tricks: { [playerId: number]: number };
   trickSuit: string;
+  roundNumber: string;
+  numberOfRounds: string;
 }

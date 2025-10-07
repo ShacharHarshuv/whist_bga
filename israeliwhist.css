@@ -92,3 +92,8 @@
   font-size: 2rem;
   padding: 0.5em;
 }
+
+#round-indication {
+  max-width: 43rem;
+  margin: 0 auto;
+}

@@ -68,6 +68,9 @@ class IsraeliWhist extends GameGui<IsraeliWhistGamedatas> {
     this.createTrumpIndication();
     this.updateTrumpSuit(this.gamedatas.trump);
 
+    this.createRoundIndication();
+    this.updateRound(+this.gamedatas.roundNumber);
+
     this.createCardsManager();
 
     this.createTables();
@@ -268,6 +271,24 @@ class IsraeliWhist extends GameGui<IsraeliWhistGamedatas> {
         <span id="trump-indication-suit">${suits[+newTrumpSuit].emoji}</span>
       `;
     })();
+  }
+
+  private createRoundIndication() {
+    const totalRounds = this.gamedatas.numberOfRounds; // todo: figure out where this number should come from
+    // TODO: consider a fancier progress bar
+    this.getGameAreaElement().insertAdjacentHTML(
+      "beforeend",
+      html`<div id="round-indication">
+        <b>Round: </b>
+        <span id="round-indication-number"></span> /
+        <span id="total-rounds">${totalRounds}</span>
+      </div>`,
+    );
+  }
+
+  private updateRound(newRound: number) {
+    document.getElementById("round-indication-number").innerHTML =
+      newRound.toString();
   }
 
   private createTables() {
@@ -510,7 +531,7 @@ class IsraeliWhist extends GameGui<IsraeliWhistGamedatas> {
 
   // #region Notifications
 
-  private notif_newHand(notif: any) {
+  private notif_newHand(notif) {
     // Remove all cards from hand
     const currentCards = this.handStock.getCards();
     for (const card of currentCards) {
@@ -524,7 +545,7 @@ class IsraeliWhist extends GameGui<IsraeliWhistGamedatas> {
     }
   }
 
-  private notif_playCard(notif: any) {
+  private notif_playCard(notif) {
     if (!this.trickSuit) {
       this.trickSuit = notif.color;
     }
@@ -536,15 +557,15 @@ class IsraeliWhist extends GameGui<IsraeliWhistGamedatas> {
     );
   }
 
-  private notif_playerPass(notif: any) {
+  private notif_playerPass(notif) {
     this.updatePlayerBid(notif.player_id, -2, 0);
   }
 
-  private notif_playerBid(notif: any) {
+  private notif_playerBid(notif) {
     this.updatePlayerBid(notif.player_id, notif.value, notif.suit);
   }
 
-  private notif_bidWon(notif: any) {
+  private notif_bidWon(notif) {
     for (const playerId in this.gamedatas.players) {
       this.updatePlayerBid(playerId, 0, 0);
     }
@@ -552,6 +573,7 @@ class IsraeliWhist extends GameGui<IsraeliWhistGamedatas> {
   }
 
   private notif_trickWin(notif: { player_id: string }) {
+    this.trickSuit = null;
     this.updatePlayerTricks(
       +notif.player_id,
       ++this.tricksTaken[notif.player_id],
@@ -565,34 +587,18 @@ class IsraeliWhist extends GameGui<IsraeliWhistGamedatas> {
     }
   }
 
-  private notif_giveAllCardsToPlayer(notif: any) {
-    const winner_id = notif.player_id;
-    for (const player_id in this.gamedatas.players) {
-      const anim = this.slideToObject(
-        "cardontable_" + player_id,
-        "overall_player_board_" + winner_id,
-      );
-      // @ts-ignore -- todo: fix
-      dojo.connect(anim, "onEnd", function (node: any) {
-        dojo.destroy(node);
-      });
-      anim.play();
-    }
-  }
-
-  private notif_points(notif: any) {
+  private notif_points(notif) {
     for (const player_id in notif.scores) {
       this.scoreCtrl[player_id].toValue(notif.scores[player_id]);
     }
   }
 
-  private notif_newRound(notif: any) {
-    // todo: implement
-    // this.round.setValue(notif.roundNumber);
-    // for (const player_id in notif.scores) {
-    //   this.contract_counter[player_id].setValue(0);
-    //   this.tricks_counter[player_id].setValue(0);
-    // }
+  private notif_newRound(notif: { roundNumber: string }) {
+    this.updateRound(+notif.roundNumber); // todo: add round indication
+    for (const playerId in this.gamedatas.players) {
+      this.updatePanelElement(playerId, "contract", html``);
+      this.updatePanelElement(playerId, "tricks", html``);
+    }
   }
 
   private notif_playerContract(notif: any) {
