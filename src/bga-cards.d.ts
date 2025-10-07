@@ -538,7 +538,6 @@ declare class CardStock<T> {
   ): void;
 }
 
-type AnimationManager = any;
 /**
  * selectable: only send card click event when the card is selectable.
  * stock-selectable: only send card click event when the stock is selectable (but the card might be disabled).

@@ -19,6 +19,7 @@ interface IsraeliWhistPlayer extends Player {
   contract: string;
   bid_suit: string;
   bid_value: string;
+  taken: string;
 }
 
 // todo: see if we can simplify this
@@ -39,4 +40,5 @@ interface IsraeliWhistGamedatas extends Gamedatas<IsraeliWhistPlayer> {
   max_rounds: number;
   bids: { [playerId: number]: number };
   tricks: { [playerId: number]: number };
+  trickSuit: string;
 }

@@ -58,7 +58,10 @@ class IsraeliWhist extends GameGui<IsraeliWhistGamedatas> {
   private animationManager: AnimationManager;
   private cardManager: CardManager<Card>;
   private handStock: HandStock<Card>;
-  private playersLineStocks: Record<number, LineStock<Card>> = {};
+  private tableStocks: Record<number, LineStock<Card>> = {};
+  private trickSuit: number | null = null;
+  private tricksTaken: Record<number, number> = {};
+  private voidStocks: Record<number, VoidStock<Card>> = {};
 
   setup() {
     console.log("Setup: ", this.gamedatas);
@@ -80,6 +83,7 @@ class IsraeliWhist extends GameGui<IsraeliWhistGamedatas> {
     }
 
     this.createPlayersPanels();
+    this.createVoidStocks();
 
     if (this.gamedatas.gamestate.name == "PlayerBid") {
       for (const playerId in this.gamedatas.players) {
@@ -94,9 +98,21 @@ class IsraeliWhist extends GameGui<IsraeliWhistGamedatas> {
           +player.bid_value,
           +player.bid_suit,
         );
-        this.updatePlayerContract(playerId, player.contract);
+        this.updatePlayerContract(+playerId, +player.contract);
+        this.updatePlayerTricks(+playerId, +player.taken);
       }
     }
+
+    if (
+      this.gamedatas.gamestate.name == "PlayerTurn" &&
+      this.player_id == this.getActivePlayerId()
+    ) {
+      setTimeout(() => {
+        this.disableUnplayableCards();
+      }, 1000);
+    }
+
+    this.trickSuit = +this.gamedatas.trickSuit || null;
 
     // Setup game notifications to handle (see "setupNotifications" method below)
     this.setupNotifications();
@@ -104,16 +120,17 @@ class IsraeliWhist extends GameGui<IsraeliWhistGamedatas> {
 
   // #region Game states
 
-  public onEnteringState(stateName: string, args: any) {
-    console.log("Entering state: " + stateName);
+  override onEnteringState(stateName, args) {
+    if (stateName == "PlayerTurn" && this.player_id === args.active_player) {
+      this.disableUnplayableCards();
+    }
   }
 
   public onLeavingState(stateName: string) {
     console.log("Leaving state: " + stateName);
 
-    switch (stateName) {
-      case "dummmy":
-        break;
+    if (stateName == "PlayerTurn") {
+      this.handStock.setSelectableCards(this.handStock.getCards());
     }
   }
 
@@ -226,7 +243,7 @@ class IsraeliWhist extends GameGui<IsraeliWhistGamedatas> {
     value: number,
     card_id: number,
   ) {
-    const stock = this.playersLineStocks[player_id];
+    const stock = this.tableStocks[player_id];
     stock.addCard({ id: card_id, type: suit, type_arg: value });
   }
 
@@ -286,7 +303,7 @@ class IsraeliWhist extends GameGui<IsraeliWhistGamedatas> {
       );
     });
 
-    this.playersLineStocks = Object.keys(this.gamedatas.players).reduce(
+    this.tableStocks = Object.keys(this.gamedatas.players).reduce(
       (acc: Record<number, LineStock<Card>>, playerId) => {
         acc[+playerId] = new BgaCards.LineStock(
           this.cardManager,
@@ -350,6 +367,9 @@ class IsraeliWhist extends GameGui<IsraeliWhistGamedatas> {
     );
     this.handStock.setSelectionMode("single");
     this.handStock.onCardClick = (card) => {
+      if (this.player_id != this.getActivePlayerId()) {
+        return;
+      }
       // this.playersLineStocks[this.player_id].addCard(card); // todo: check how and if we can do optimistic update
       this.bgaPerformAction("actPlayCard", { cardId: card.id });
       this.handStock.unselectAll();
@@ -370,7 +390,18 @@ class IsraeliWhist extends GameGui<IsraeliWhistGamedatas> {
         html`<div class="player-panel" id="player_panel_${playerId}">
           <div id="bid"></div>
           <div id="contract"></div>
+          <div id="tricks"></div>
         </div>`,
+      );
+    }
+  }
+
+  private createVoidStocks() {
+    const { players } = this.gamedatas;
+    for (const playerId in players) {
+      this.voidStocks[+playerId] = new BgaCards.VoidStock(
+        this.cardManager,
+        document.querySelector(`#player_panel_${playerId} #tricks`),
       );
     }
   }
@@ -412,10 +443,7 @@ class IsraeliWhist extends GameGui<IsraeliWhistGamedatas> {
     }
   }
 
-  private updatePlayerContract(
-    playerId: number | string,
-    value: number | string,
-  ) {
+  private updatePlayerContract(playerId: number, value: number) {
     console.log("updatePlayerContract", playerId, value);
     if (+value < 0) {
       this.updatePanelElement(playerId, "contract", html``);
@@ -428,6 +456,11 @@ class IsraeliWhist extends GameGui<IsraeliWhistGamedatas> {
       "contract",
       html`<b>Contract:</b> ${value}`,
     );
+  }
+
+  private updatePlayerTricks(playerId: number, value: number) {
+    this.updatePanelElement(playerId, "tricks", html`<b>Tricks:</b> ${value}`);
+    this.tricksTaken[+playerId] = +value;
   }
 
   private updatePanelElement(
@@ -444,6 +477,19 @@ class IsraeliWhist extends GameGui<IsraeliWhistGamedatas> {
       );
     }
     element.innerHTML = newValue;
+  }
+
+  private disableUnplayableCards() {
+    if (!this.trickSuit) {
+      return;
+    }
+    const cardsWithSameSuit = this.handStock
+      .getCards()
+      .filter((card) => card.type == this.trickSuit);
+    if (!cardsWithSameSuit.length) {
+      return;
+    }
+    this.handStock.setSelectableCards(cardsWithSameSuit);
   }
 
   // #endregion
@@ -499,8 +545,18 @@ class IsraeliWhist extends GameGui<IsraeliWhistGamedatas> {
     this.updateTrumpSuit(notif.suit);
   }
 
-  private notif_trickWin(notif: any) {
-    // todo: implement tricks indication
+  private notif_trickWin(notif: { player_id: string }) {
+    this.updatePlayerTricks(
+      +notif.player_id,
+      ++this.tricksTaken[notif.player_id],
+    );
+    const cardsToCollect = Object.values(this.tableStocks).flatMap((stock) =>
+      stock.getCards(),
+    );
+    const voidStock = this.voidStocks[notif.player_id];
+    for (const card of cardsToCollect) {
+      voidStock.addCard(card);
+    }
   }
 
   private notif_giveAllCardsToPlayer(notif: any) {

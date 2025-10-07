@@ -235,6 +235,8 @@ class Game extends \Bga\GameFramework\Table
         //     //	$result['players'][$player_id]['contract'] = 0;
         // }
 
+        $result["trickSuit"] = $this->getGameStateValue("trickSuit");
+
         return $result;
     }
 

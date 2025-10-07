@@ -75,7 +75,7 @@ class NextPlayer extends \Bga\GameFramework\States\GameState
             // Note: we use 2 notifications here in order we can pause the display during the first notification
             //  before we move all cards to the winner (during the second)
             $players = $this->game->loadPlayersBasicInfos();
-            $this->game->notifyAllPlayers(
+            $this->game->notify->all(
                 "trickWin",
                 clienttranslate('${player_name} wins the trick'),
                 [
