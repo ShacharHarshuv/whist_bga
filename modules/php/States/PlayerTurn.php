@@ -21,18 +21,60 @@ class PlayerTurn extends \Bga\GameFramework\States\GameState
         );
     }
 
+    private function checkIsCardPlayable(int $cardId, int $playerId)
+    {
+        $game = $this->game;
+
+        // Check if player already played a card this trick
+        if ($game->deck->getCardsInLocation("cardsontable", $playerId)) {
+            return throw new \BgaVisibleSystemException(
+                clienttranslate("You already played a card in this trick")
+            );
+        }
+
+        // Check if card exists in player's hand
+        $card = $game->deck->getCard($cardId);
+        if (
+            $card["location"] !== "hand" ||
+            $card["location_arg"] != $playerId
+        ) {
+            return throw new \BgaVisibleSystemException(
+                clienttranslate("You don't have that card in your hand")
+            );
+        }
+
+        $currentTrickSuit = $game->getGameStateValue("trickSuit");
+
+        // If this is the first card of the trick, any card is playable
+        if (!$currentTrickSuit) {
+            return;
+        }
+
+        // If card follows the trick suit, it's playable
+        if ($card["type"] == $currentTrickSuit) {
+            return;
+        }
+
+        // If card doesn't follow suit, check if player has any cards of the trick suit
+        $hand = $game->deck->getPlayerHand($playerId);
+        foreach ($hand as $handCard) {
+            if ($handCard["type"] == $currentTrickSuit) {
+                return throw new \BgaVisibleSystemException(
+                    clienttranslate("You have to play a card of the same suit")
+                );
+            }
+        }
+
+        // Player has no cards of the trick suit, so any card is playable
+        return true;
+    }
+
     #[PossibleAction]
     public function actPlayCard(int $cardId, int $activePlayerId)
     {
         $game = $this->game;
 
-        // Check whether the selected card can be played or not
-        $playable_cards = $game->checkPlayableCards($activePlayerId);
-        if (!in_array($cardId, $playable_cards)) {
-            throw new \BgaVisibleSystemException(
-                clienttranslate("You must play a card with the same suit")
-            );
-        }
+        $this->checkIsCardPlayable($cardId, $activePlayerId);
 
         $game->deck->moveCard($cardId, "cardsontable", $activePlayerId);
         $currentCard = $game->deck->getCard($cardId);
@@ -65,14 +107,42 @@ class PlayerTurn extends \Bga\GameFramework\States\GameState
         return NextPlayer::class;
     }
 
+    // Plays the highest possible card
     public function zombie(int $playerId)
     {
-        // We must implement this so BGA can auto play in the case a player becomes a zombie, but for this tutorial we won't handle this case
-        throw new \BgaUserException(
-            'Not implemented: zombie for player ${player_id}',
-            args: [
-                "player_id" => $playerId,
-            ]
-        );
+        $game = $this->game;
+
+        // Get all cards in player's hand
+        $hand = $game->deck->getPlayerHand($playerId);
+
+        $currentTrickSuit = $game->getGameStateValue("trickSuit");
+
+        $cardToPlay = null;
+        $highestValue = 0;
+
+        if ($currentTrickSuit) {
+            foreach ($hand as $card) {
+                if (
+                    $card["type"] == $currentTrickSuit &&
+                    $card["type_arg"] > $highestValue
+                ) {
+                    $highestValue = $card["type_arg"];
+                    $cardToPlay = $card;
+                }
+            }
+        }
+
+        if (!$cardToPlay) {
+            foreach ($hand as $card) {
+                if ($card["type_arg"] > $highestValue) {
+                    $highestValue = $card["type_arg"];
+                    $cardToPlay = $card;
+                }
+            }
+        }
+
+        if ($cardToPlay) {
+            $this->actPlayCard($cardToPlay["id"], $playerId);
+        }
     }
 }

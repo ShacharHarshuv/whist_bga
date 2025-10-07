@@ -14,7 +14,7 @@ class NextTrick extends \Bga\GameFramework\States\GameState
         parent::__construct($game, id: 33, type: StateType::GAME);
     }
 
-    function onEnteringState(): string
+    function onEnteringState()
     {
         // Reset trick color for the next trick
         $this->game->setGameStateValue("trickSuit", 0);

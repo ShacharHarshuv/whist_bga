@@ -65,7 +65,7 @@ class EndHand extends \Bga\GameFramework\States\GameState
         $numberOfRounds = $this->game->numberOfRounds;
         if ($round >= $numberOfRounds) {
             // Game ends after 13 rounds
-            return 99; // todo: check this actually hands the game
+            return 99; // todo: check this actually ends the game
         } else {
             // Next round
             $this->game->setGameStateValue("roundNumber", $round + 1);

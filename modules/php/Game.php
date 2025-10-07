@@ -242,20 +242,10 @@ class Game extends \Bga\GameFramework\Table
         return $result;
     }
 
-    /*
-        getGameProgression:
-
-        Compute and return the current game progression.
-        The number returned must be an integer beween 0 (=the game just started) and
-        100 (= the game is finished or almost finished).
-
-        This method is called each time we are in a game state with the "updateGameProgression" property set to true
-        (see states.inc.php)
-    */
-    function getGameProgression()
+    function getGameProgression(): int
     {
         $round = $this->getGameStateValue("roundNumber");
-        return $round * 10;
+        return (int) round(($round / $this->numberOfRounds) * 100);
     }
 
     //////////////////////////////////////////////////////////////////////////////
@@ -265,48 +255,6 @@ class Game extends \Bga\GameFramework\Table
     function formatBid(int $value, int $suit): string
     {
         return $this->values_label[$value] . $this->suits[$suit]["emoji"];
-    }
-
-    // todo: should we move this to the state?
-    function checkPlayableCards($player_id): array
-    {
-        // Get all data needed to check playable cards at the moment
-        $currenttrickSuit = $this->getGameStateValue("trickSuit");
-        $hand = $this->deck->getPlayerHand($player_id);
-        $all_ids = self::getObjectListFromDB(
-            "SELECT card_id FROM card WHERE card_location = 'hand' AND card_location_arg = $player_id",
-            true
-        );
-
-        if ($this->deck->getCardsInLocation("cardsontable", $player_id)) {
-            return [];
-        } // Already played a card
-
-        if (!$currenttrickSuit) {
-            // First card of the trick
-            return $all_ids;
-        }
-        // Broken Heart or no limitation, can play any card
-        else {
-            // Must follow the lead suit if possible
-            $same_suit = false;
-            foreach ($hand as $card) {
-                if ($card["type"] == $currenttrickSuit) {
-                    $same_suit = true;
-                    break;
-                }
-            }
-            if ($same_suit) {
-                return self::getObjectListFromDB(
-                    "SELECT card_id FROM card WHERE card_type = $currenttrickSuit AND card_location = 'hand' AND card_location_arg = $player_id",
-                    true
-                );
-            }
-            // Has at least 1 card of the same suit
-            else {
-                return $all_ids;
-            } // If not, may play any card...
-        }
     }
 
     //////////////////////////////////////////////////////////////////////////////
