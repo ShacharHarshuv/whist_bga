@@ -2,13 +2,13 @@
 
 declare(strict_types=1);
 
-namespace Bga\Games\israeliwhistshahar;
+namespace Bga\Games\israeliwhist;
 
-use Bga\Games\israeliwhistshahar\States\NewHand;
-use Bga\Games\israeliwhistshahar\States\NextPlayer;
-use Bga\Games\israeliwhistshahar\States\NextBidder;
-use Bga\Games\israeliwhistshahar\States\NextDeclaration;
-use Bga\Games\israeliwhistshahar\States\ZombiePass;
+use Bga\Games\israeliwhist\States\NewHand;
+use Bga\Games\israeliwhist\States\NextPlayer;
+use Bga\Games\israeliwhist\States\NextBidder;
+use Bga\Games\israeliwhist\States\NextDeclaration;
+use Bga\Games\israeliwhist\States\ZombiePass;
 
 /*
  1 = Clubs (weakest)
@@ -81,7 +81,7 @@ class Game extends \Bga\GameFramework\Table
     protected function getGameName()
     {
         // Used for translations and stuff. Please do not modify.
-        return "israeliwhistshahar";
+        return "israeliwhist";
     }
 
     /*

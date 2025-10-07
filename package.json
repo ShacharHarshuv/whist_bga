@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "description": "Israeli Whist game for Board Game Arena",
   "private": true,
-  "main": "israeliwhistshahar.js",
+  "main": "israeliwhist.js",
   "scripts": {
     "build:ts": "tsc",
     "watch:ts": "tsc --watch",
@@ -15,7 +15,7 @@
     "format:js": "prettier --write \"**/*.js\"",
     "format:css": "prettier --write \"**/*.css\""
   },
-  "author": "Tom Golan and Shahar Har-Shuv",
+  "author": "Tom Golan & Shahar Har-Shuv",
   "license": "MIT",
   "devDependencies": {
     "@prettier/plugin-php": "^0.22.0",

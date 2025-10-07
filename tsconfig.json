@@ -6,12 +6,12 @@
     "lib": ["dom", "esnext"],
     "sourceMap": false,
     "typeRoots": ["src/types", "./types", "./node_modules/@types"],
-    "outFile": "israeliwhistshahar.js"
+    "outFile": "israeliwhist.js"
   },
   "files": [
     "bga-framework.d.ts",
-    "src/israeliwhistshahar.d.ts",
-    "src/israeliwhistshahar.ts",
+    "src/israeliwhist.d.ts",
+    "src/israeliwhist.ts",
     "src/define.ts",
     "src/bga-cards.d.ts",
     "src/bga-animations.d.ts"

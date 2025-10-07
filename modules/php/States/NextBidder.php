@@ -2,10 +2,10 @@
 
 declare(strict_types=1);
 
-namespace Bga\Games\israeliwhistshahar\States;
+namespace Bga\Games\israeliwhist\States;
 
 use Bga\GameFramework\StateType;
-use Bga\Games\israeliwhistshahar\Game;
+use Bga\Games\israeliwhist\Game;
 
 class NextBidder extends \Bga\GameFramework\States\GameState
 {

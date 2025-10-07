@@ -8,7 +8,7 @@ node_modules/
 dist/
 
 # Generated TypeScript output (don't commit, it's built from src/)
-israeliwhistshahar.js
+israeliwhist.js
 
 # Compiled Java class files
 *.class

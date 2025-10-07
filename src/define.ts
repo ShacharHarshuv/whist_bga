@@ -8,9 +8,5 @@ define([
 ], function (dojo, declare, gamegui, counter, BgaAnimations, BgaCards) {
   (window as any).BgaAnimations = BgaAnimations; // todo: do we need those "hacks"?
   (window as any).BgaCards = BgaCards;
-  return declare(
-    "bgagame.israeliwhistshahar",
-    ebg.core.gamegui,
-    new IsraeliWhist(),
-  );
+  return declare("bgagame.israeliwhist", ebg.core.gamegui, new IsraeliWhist());
 });
