@@ -120,8 +120,11 @@ class IsraeliWhist extends GameGui<IsraeliWhistGamedatas> {
 
   // #region Game states
 
-  override onEnteringState(stateName, args) {
-    if (stateName == "PlayerTurn" && this.player_id === args.active_player) {
+  onEnteringState(stateName) {
+    if (
+      stateName == "PlayerTurn" &&
+      this.player_id === this.getActivePlayerId()
+    ) {
       this.disableUnplayableCards();
     }
   }
@@ -522,6 +525,9 @@ class IsraeliWhist extends GameGui<IsraeliWhistGamedatas> {
   }
 
   private notif_playCard(notif: any) {
+    if (!this.trickSuit) {
+      this.trickSuit = notif.color;
+    }
     this.playCardOnTable(
       notif.player_id,
       notif.color,
