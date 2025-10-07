@@ -587,9 +587,14 @@ class IsraeliWhist extends GameGui<IsraeliWhistGamedatas> {
     }
   }
 
-  private notif_points(notif) {
-    for (const player_id in notif.scores) {
-      this.scoreCtrl[player_id].toValue(notif.scores[player_id]);
+  private notif_points(
+    scores: {
+      player_id: number;
+      points: number;
+    }[],
+  ) {
+    for (const score of scores) {
+      this.scoreCtrl[score.player_id].incValue(score.points);
     }
   }
 
@@ -601,8 +606,9 @@ class IsraeliWhist extends GameGui<IsraeliWhistGamedatas> {
     }
   }
 
-  private notif_playerContract(notif: any) {
+  private notif_playerContract(notif) {
     this.updatePlayerContract(notif.player_id, notif.value);
+    this.updatePlayerTricks(notif.player_id, 0);
   }
 
   // #endregion

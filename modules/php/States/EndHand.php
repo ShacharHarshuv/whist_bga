@@ -14,47 +14,62 @@ class EndHand extends \Bga\GameFramework\States\GameState
         parent::__construct($game, id: 40, type: StateType::GAME);
     }
 
+    function calculatePoints(int $taken, int $contract): int
+    {
+        if ($taken == $contract) {
+            if ($contract == 0) {
+                $contractsSum = $this->game->getGameStateValue("contractsSum");
+                $isOver = $contractsSum > 13;
+                return $isOver ? 25 : 50;
+            }
+
+            return $taken * $taken + 10;
+        }
+
+        $diff = abs($taken - $contract);
+
+        if ($contract == 0) {
+            return -50 + ($diff - 1) * 10;
+        }
+
+        return -10 * $diff;
+    }
+
     function onEnteringState()
     {
         // Calculate scores for each player
         $players = $this->game->loadPlayersBasicInfos();
+        $playerScores = [];
 
-        foreach ($players as $player_id => $player) {
+        foreach (array_keys($players) as $player_id) {
             $sql = "SELECT tricks_taken, contract FROM player WHERE player_id='$player_id'";
             $player_data = $this->game->getObjectFromDB($sql);
 
             $tricks_taken = $player_data["tricks_taken"];
             $contract = $player_data["contract"];
 
-            $score = 0;
-            if ($tricks_taken == $contract) {
-                // Success
-                if ($tricks_taken == 0) {
-                    $score = 50; // Special bonus for taking exactly 0 when betting 0
-                } else {
-                    $score = $tricks_taken * $tricks_taken + 10;
-                }
-            } else {
-                // Failure
-                $diff = abs($tricks_taken - $contract);
-                $score = -10 * $diff;
-            }
+            $score = $this->calculatePoints(
+                (int) $tricks_taken,
+                (int) $contract
+            );
 
             // Update player score
             $sql = "UPDATE player SET player_score = player_score + $score WHERE player_id='$player_id'";
             $this->game->DbQuery($sql);
 
-            // Notify about points
-            $this->notify->all(
-                "points",
-                clienttranslate('${player_name} scores ${points} points'),
-                [
-                    "player_id" => $player_id,
-                    "player_name" => $this->game->getPlayerNameById($player_id),
-                    "points" => $score,
-                ]
-            );
+            // Collect scoring data for notification
+            $playerScores[] = [
+                "player_id" => $player_id,
+                "points" => $score,
+            ];
         }
+
+        // Send single notification with all players' points
+        $this->notify->all(
+            "points",
+            clienttranslate("Points scored this round"),
+            $playerScores
+        );
 
         // Reset tricks for next hand
         $sql = "UPDATE player SET tricks_taken = 0, contract = 0";
