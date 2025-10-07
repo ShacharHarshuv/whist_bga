@@ -1,9 +1,13 @@
 define([
-    "dojo","dojo/_base/declare",
-    "ebg/core/gamegui",
-    "ebg/counter",
-    "ebg/stock"
-],
-function (dojo, declare) {
-    return declare("bgagame.israeliwhistshahar", ebg.core.gamegui, new IsraeliWhistShahar());             
+  "dojo",
+  "dojo/_base/declare",
+  "ebg/core/gamegui",
+  "ebg/counter",
+  "ebg/stock",
+], function (dojo, declare) {
+  return declare(
+    "bgagame.israeliwhistshahar",
+    ebg.core.gamegui,
+    new IsraeliWhist(),
+  );
 });

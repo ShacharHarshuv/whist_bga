@@ -50,25 +50,25 @@ let playerHand: any;
 const cardwidth = 72;
 const cardheight = 96;
 
-class IsraeliWhistShahar implements Game {
-  private gamedatas: IsraeliWhistShaharGamedatas;
-  private player_id: string;
-  private players: { [playerId: number]: IsraeliWhistShaharPlayer };
-  private scoreCtrl: { [playerId: string]: any };
-  private contract_counter: { [playerId: string]: any };
-  private tricks_counter: { [playerId: string]: any };
-  private round: any;
-  private statusBar: any;
-  private notifqueue: any;
+// @ts-ignore
+GameGui = (function () {
+  // this hack required so we fake extend GameGui
+  function GameGui() {}
+  return GameGui;
+})();
 
-  constructor() {
-    console.log("israeliwhistshahar constructor!");
-  }
+class IsraeliWhist extends GameGui<IsraeliWhistGamedatas> {
+  // private players: { [playerId: number]: IsraeliWhistPlayer };
+  // private scoreCtrl: { [playerId: string]: any };
+  // private contract_counter: { [playerId: string]: any };
+  // private tricks_counter: { [playerId: string]: any };
+  // private statusBar: any;
+  private notifqueue: any; // see if we can type it
 
-  public setup(gamedatas: IsraeliWhistShaharGamedatas) {
-    console.log("Starting game setup?", gamedatas);
+  setup(gamedatas) {
+    console.log("Starting game setup!", gamedatas);
 
-    createTrumpIndication((this as any).getGameAreaElement());
+    createTrumpIndication(this.getGameAreaElement());
     updateTrumpSuit(gamedatas.trump);
 
     createTables((this as any).getGameAreaElement(), gamedatas.players);
@@ -333,7 +333,7 @@ class IsraeliWhistShahar implements Game {
   }
 
   private notif_trickWin(notif: any) {
-    this.tricks_counter[notif.player_id].incValue(1);
+    // todo: implement tricks indication
   }
 
   private notif_giveAllCardsToPlayer(notif: any) {
@@ -357,12 +357,12 @@ class IsraeliWhistShahar implements Game {
   }
 
   private notif_newRound(notif: any) {
-    this.round.setValue(notif.roundNumber);
-
-    for (const player_id in notif.scores) {
-      this.contract_counter[player_id].setValue(0);
-      this.tricks_counter[player_id].setValue(0);
-    }
+    // todo: implement
+    // this.round.setValue(notif.roundNumber);
+    // for (const player_id in notif.scores) {
+    //   this.contract_counter[player_id].setValue(0);
+    //   this.tricks_counter[player_id].setValue(0);
+    // }
   }
 
   private notif_playerContract(notif: any) {
@@ -373,7 +373,7 @@ class IsraeliWhistShahar implements Game {
 // Utility functions
 function createTables(
   gameAreaElement: HTMLElement,
-  players: { [playerId: number]: IsraeliWhistShaharPlayer },
+  players: { [playerId: number]: IsraeliWhistPlayer },
 ) {
   gameAreaElement.insertAdjacentHTML(
     "beforeend",
@@ -414,7 +414,7 @@ function createPlayerHand(page: any, hand: Card[]) {
     `,
   );
 
-  playerHand = new ebg.stock();
+  playerHand = new (ebg as any).stock();
   playerHand.create(
     page,
     document.getElementById("myhand"),
@@ -445,15 +445,14 @@ function createPlayerHand(page: any, hand: Card[]) {
   dojo.connect(
     playerHand,
     "onChangeSelection",
-    page,
-    "onPlayerHandSelectionChanged",
+    page.onPlayerHandSelectionChanged,
   );
 
   return playerHand;
 }
 
 function createPlayersPanels(
-  players: { [playerId: number]: IsraeliWhistShaharPlayer },
+  players: { [playerId: number]: IsraeliWhistPlayer },
   getPlayerPanelElement: (playerId: number | string) => HTMLElement,
 ) {
   for (const playerId in players) {

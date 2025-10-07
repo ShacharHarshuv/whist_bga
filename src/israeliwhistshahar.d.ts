@@ -10,7 +10,7 @@ interface Card {
   type_arg: number;
 }
 
-interface IsraeliWhistShaharPlayer extends Player {
+interface IsraeliWhistPlayer extends Player {
   cards: Card[];
   hand_size: number;
   tricks_won: number;
@@ -18,16 +18,13 @@ interface IsraeliWhistShaharPlayer extends Player {
   score_round: number;
 }
 
-interface IsraeliWhistShaharGamedatas {
+// todo: see if we can simplify this
+interface IsraeliWhistGamedatas extends Gamedatas<IsraeliWhistPlayer> {
   current_player_id: string;
   decision: { decision_type: string };
   game_result_neutralized: string;
-  gamestate: Gamestate;
-  gamestates: { [gamestateId: number]: Gamestate };
   neutralized_player_id: string;
   notifications: { last_packet_id: string; move_nbr: string };
-  playerorder: (string | number)[];
-  players: { [playerId: number]: IsraeliWhistShaharPlayer };
   tablespeed: string;
 
   // Game specific data

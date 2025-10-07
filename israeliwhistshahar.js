@@ -14,6 +14,21 @@
  * In this file, you are describing the logic of your user interface, in TypeScript language.
  *
  */
+var __extends = (this && this.__extends) || (function () {
+    var extendStatics = function (d, b) {
+        extendStatics = Object.setPrototypeOf ||
+            ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
+            function (d, b) { for (var p in b) if (Object.prototype.hasOwnProperty.call(b, p)) d[p] = b[p]; };
+        return extendStatics(d, b);
+    };
+    return function (d, b) {
+        if (typeof b !== "function" && b !== null)
+            throw new TypeError("Class extends value " + String(b) + " is not a constructor or null");
+        extendStatics(d, b);
+        function __() { this.constructor = d; }
+        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+    };
+})();
 var __makeTemplateObject = (this && this.__makeTemplateObject) || function (cooked, raw) {
     if (Object.defineProperty) { Object.defineProperty(cooked, "raw", { value: raw }); } else { cooked.raw = raw; }
     return cooked;
@@ -43,13 +58,20 @@ var totalContracts = 0;
 var playerHand;
 var cardwidth = 72;
 var cardheight = 96;
-var IsraeliWhistShahar = /** @class */ (function () {
-    function IsraeliWhistShahar() {
-        console.log("israeliwhistshahar constructor!");
+// @ts-ignore
+GameGui = (function () {
+    // this hack required so we fake extend GameGui
+    function GameGui() { }
+    return GameGui;
+})();
+var IsraeliWhist = /** @class */ (function (_super) {
+    __extends(IsraeliWhist, _super);
+    function IsraeliWhist() {
+        return _super !== null && _super.apply(this, arguments) || this;
     }
-    IsraeliWhistShahar.prototype.setup = function (gamedatas) {
+    IsraeliWhist.prototype.setup = function (gamedatas) {
         var _this = this;
-        console.log("Starting game setup?", gamedatas);
+        console.log("Starting game setup!", gamedatas);
         createTrumpIndication(this.getGameAreaElement());
         updateTrumpSuit(gamedatas.trump);
         createTables(this.getGameAreaElement(), gamedatas.players);
@@ -82,17 +104,17 @@ var IsraeliWhistShahar = /** @class */ (function () {
         this.setupNotifications();
         console.log("Ending game setup");
     };
-    IsraeliWhistShahar.prototype.onEnteringState = function (stateName, args) {
+    IsraeliWhist.prototype.onEnteringState = function (stateName, args) {
         console.log("Entering state: " + stateName);
     };
-    IsraeliWhistShahar.prototype.onLeavingState = function (stateName) {
+    IsraeliWhist.prototype.onLeavingState = function (stateName) {
         console.log("Leaving state: " + stateName);
         switch (stateName) {
             case "dummmy":
                 break;
         }
     };
-    IsraeliWhistShahar.prototype.onUpdateActionButtons = function (stateName, args) {
+    IsraeliWhist.prototype.onUpdateActionButtons = function (stateName, args) {
         var _this = this;
         console.log("onUpdateActionButtons: " + stateName);
         console.log("State Name", stateName);
@@ -176,7 +198,7 @@ var IsraeliWhistShahar = /** @class */ (function () {
         }
     };
     // Utility methods
-    IsraeliWhistShahar.prototype.playCardOnTable = function (player_id, color, value, card_id) {
+    IsraeliWhist.prototype.playCardOnTable = function (player_id, color, value, card_id) {
         this.addTableCard(value, color, player_id, player_id);
         if (player_id != +this.player_id) {
             this.placeOnObject("cardontable_" + player_id, "overall_player_board_" + player_id);
@@ -191,14 +213,14 @@ var IsraeliWhistShahar = /** @class */ (function () {
             .slideToObject("cardontable_" + player_id, "playertablecard_" + player_id)
             .play();
     };
-    IsraeliWhistShahar.prototype.addTableCard = function (value, suit, card_player_id, playerTableId) {
+    IsraeliWhist.prototype.addTableCard = function (value, suit, card_player_id, playerTableId) {
         var x = value - 2;
         var y = suit - 1;
         document
             .getElementById("playertablecard_" + playerTableId)
             .insertAdjacentHTML("beforeend", html(__makeTemplateObject(["<div\n          class=\"card cardontable\"\n          id=\"cardontable_", "\"\n          style=\"background-position:-", "00% -", "00%\"\n        ></div>"], ["<div\n          class=\"card cardontable\"\n          id=\"cardontable_", "\"\n          style=\"background-position:-", "00% -", "00%\"\n        ></div>"]), card_player_id, x, y));
     };
-    IsraeliWhistShahar.prototype.onPlayerHandSelectionChanged = function () {
+    IsraeliWhist.prototype.onPlayerHandSelectionChanged = function () {
         var items = playerHand.getSelectedItems();
         if (items.length > 0) {
             var canPlay = true;
@@ -214,16 +236,16 @@ var IsraeliWhistShahar = /** @class */ (function () {
     };
     // Framework methods - these are provided by ebg.core.gamegui in the BGA environment
     // We use type assertions to access them since they're added by the BGA framework at runtime
-    IsraeliWhistShahar.prototype.getCardUniqueId = function (color, value) {
+    IsraeliWhist.prototype.getCardUniqueId = function (color, value) {
         return cardId(color, value);
     };
-    IsraeliWhistShahar.prototype.setupNotifications = function () {
+    IsraeliWhist.prototype.setupNotifications = function () {
         this.bgaSetupPromiseNotifications(); // todo
         this.notifqueue.setSynchronous("trickWin", 1000);
         this.notifqueue.setSynchronous("playCard", 500);
     };
     // Notification handlers
-    IsraeliWhistShahar.prototype.notif_newHand = function (notif) {
+    IsraeliWhist.prototype.notif_newHand = function (notif) {
         playerHand.removeAll();
         for (var i in notif.cards) {
             var card = notif.cards[i];
@@ -232,25 +254,25 @@ var IsraeliWhistShahar = /** @class */ (function () {
             playerHand.addToStockWithId(this.getCardUniqueId(color, value), card.id);
         }
     };
-    IsraeliWhistShahar.prototype.notif_playCard = function (notif) {
+    IsraeliWhist.prototype.notif_playCard = function (notif) {
         this.playCardOnTable(notif.player_id, notif.color, notif.value, notif.card_id);
     };
-    IsraeliWhistShahar.prototype.notif_playerPass = function (notif) {
+    IsraeliWhist.prototype.notif_playerPass = function (notif) {
         updatePlayerBid(notif.player_id, -2, 0);
     };
-    IsraeliWhistShahar.prototype.notif_playerBid = function (notif) {
+    IsraeliWhist.prototype.notif_playerBid = function (notif) {
         updatePlayerBid(notif.player_id, notif.value, notif.suit);
     };
-    IsraeliWhistShahar.prototype.notif_bidWon = function (notif) {
+    IsraeliWhist.prototype.notif_bidWon = function (notif) {
         for (var playerId in this.gamedatas.players) {
             updatePlayerBid(playerId, 0, 0);
         }
         updateTrumpSuit(notif.suit);
     };
-    IsraeliWhistShahar.prototype.notif_trickWin = function (notif) {
-        this.tricks_counter[notif.player_id].incValue(1);
+    IsraeliWhist.prototype.notif_trickWin = function (notif) {
+        // todo: implement tricks indication
     };
-    IsraeliWhistShahar.prototype.notif_giveAllCardsToPlayer = function (notif) {
+    IsraeliWhist.prototype.notif_giveAllCardsToPlayer = function (notif) {
         var winner_id = notif.player_id;
         for (var player_id in this.gamedatas.players) {
             var anim = this.slideToObject("cardontable_" + player_id, "overall_player_board_" + winner_id);
@@ -260,23 +282,24 @@ var IsraeliWhistShahar = /** @class */ (function () {
             anim.play();
         }
     };
-    IsraeliWhistShahar.prototype.notif_points = function (notif) {
+    IsraeliWhist.prototype.notif_points = function (notif) {
         for (var player_id in notif.scores) {
             this.scoreCtrl[player_id].toValue(notif.scores[player_id]);
         }
     };
-    IsraeliWhistShahar.prototype.notif_newRound = function (notif) {
-        this.round.setValue(notif.roundNumber);
-        for (var player_id in notif.scores) {
-            this.contract_counter[player_id].setValue(0);
-            this.tricks_counter[player_id].setValue(0);
-        }
+    IsraeliWhist.prototype.notif_newRound = function (notif) {
+        // todo: implement
+        // this.round.setValue(notif.roundNumber);
+        // for (const player_id in notif.scores) {
+        //   this.contract_counter[player_id].setValue(0);
+        //   this.tricks_counter[player_id].setValue(0);
+        // }
     };
-    IsraeliWhistShahar.prototype.notif_playerContract = function (notif) {
+    IsraeliWhist.prototype.notif_playerContract = function (notif) {
         updatePlayerContract(notif.player_id, notif.value);
     };
-    return IsraeliWhistShahar;
-}());
+    return IsraeliWhist;
+}(GameGui));
 // Utility functions
 function createTables(gameAreaElement, players) {
     gameAreaElement.insertAdjacentHTML("beforeend", html(__makeTemplateObject([" <div id=\"player-tables\"></div> "], [" <div id=\"player-tables\"></div> "])));
@@ -302,7 +325,7 @@ function createPlayerHand(page, hand) {
         var value = +card.type_arg;
         playerHand.addToStockWithId(cardId(suit, value), card.id);
     }
-    dojo.connect(playerHand, "onChangeSelection", page, "onPlayerHandSelectionChanged");
+    dojo.connect(playerHand, "onChangeSelection", page.onPlayerHandSelectionChanged);
     return playerHand;
 }
 function createPlayersPanels(players, getPlayerPanelElement) {
@@ -385,10 +408,11 @@ function updateTrumpSuit(newTrumpSuit) {
     })();
 }
 define([
-    "dojo", "dojo/_base/declare",
+    "dojo",
+    "dojo/_base/declare",
     "ebg/core/gamegui",
     "ebg/counter",
-    "ebg/stock"
+    "ebg/stock",
 ], function (dojo, declare) {
-    return declare("bgagame.israeliwhistshahar", ebg.core.gamegui, new IsraeliWhistShahar());
+    return declare("bgagame.israeliwhistshahar", ebg.core.gamegui, new IsraeliWhist());
 });
