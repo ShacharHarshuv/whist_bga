@@ -84,13 +84,17 @@ class IsraeliWhist extends GameGui<IsraeliWhistGamedatas> {
     if (this.gamedatas.gamestate.name == "PlayerBid") {
       for (const playerId in this.gamedatas.players) {
         const player = this.gamedatas.players[playerId];
-        this.updatePlayerBid(playerId, player.bid, 0); // Assuming bid_suit is 0 for now
+        this.updatePlayerBid(playerId, +player.bid_value, +player.bid_suit);
       }
     } else {
       for (const playerId in this.gamedatas.players) {
         const player = this.gamedatas.players[playerId];
-        this.updateHighestBidState(playerId, player.bid, 0);
-        this.updatePlayerContract(playerId, player.tricks_won);
+        this.updateHighestBidState(
+          playerId,
+          +player.bid_value,
+          +player.bid_suit,
+        );
+        this.updatePlayerContract(playerId, player.contract);
       }
     }
 
@@ -252,7 +256,12 @@ class IsraeliWhist extends GameGui<IsraeliWhistGamedatas> {
       html` <div id="player-tables"></div> `,
     );
 
-    Object.values(this.gamedatas.players).forEach((player, index) => {
+    const players = [...Object.values(this.gamedatas.players)];
+    while (+players[0].id != this.player_id) {
+      players.push(players.shift());
+    }
+
+    players.forEach((player, index) => {
       document.getElementById("player-tables").insertAdjacentHTML(
         "beforeend",
         html`
@@ -299,6 +308,7 @@ class IsraeliWhist extends GameGui<IsraeliWhistGamedatas> {
       animationManager: this.animationManager,
       cardWidth: 72,
       cardHeight: 96,
+      cardBorderRadius: "3px",
       getId: ({ id }) => id,
       setupDiv: (card, element: HTMLDivElement) => {
         element.classList.add("card");
@@ -308,8 +318,8 @@ class IsraeliWhist extends GameGui<IsraeliWhistGamedatas> {
         const suit = card.type;
         const value = card.type_arg;
         const x = value - 2;
-        const y = getSpriteSheetSuitIndex(suit) - 1;
-        element.style.backgroundImage = `url(${(window as any).g_gamethemeurl}img/cards.jpg)`;
+        const y = suit - 1;
+        element.style.backgroundImage = `url(${(window as any).g_gamethemeurl}img/cards2.jpg)`;
         element.style.backgroundPosition = `-${x}00% -${y}00%`;
         element.style.backgroundSize = `${13 * 100}% ${4 * 100}%`;
       },
@@ -332,12 +342,17 @@ class IsraeliWhist extends GameGui<IsraeliWhistGamedatas> {
     this.handStock = new BgaCards.HandStock(
       this.cardManager,
       document.getElementById("myhand"),
-      {},
+      {
+        sort: (a, b) =>
+          getSuitSortIndex(a.type) - getSuitSortIndex(b.type) ||
+          a.type_arg - b.type_arg,
+      },
     );
     this.handStock.setSelectionMode("single");
     this.handStock.onCardClick = (card) => {
-      this.playersLineStocks[this.player_id].addCard(card);
-      // this.bgaPerformAction("actPlayCard", { cardId: card.id }); // bind that again
+      // this.playersLineStocks[this.player_id].addCard(card); // todo: check how and if we can do optimistic update
+      this.bgaPerformAction("actPlayCard", { cardId: card.id });
+      this.handStock.unselectAll();
     };
 
     // Add cards to hand
@@ -526,17 +541,7 @@ class IsraeliWhist extends GameGui<IsraeliWhistGamedatas> {
 }
 
 function cardId(suit: number, value: number): number {
-  return (getSpriteSheetSuitIndex(suit) - 1) * 13 + (value - 2);
-}
-
-function getSpriteSheetSuitIndex(logicalSuit: number): number {
-  const mapping = {
-    1: 4, // Clubs -> position 4 in sprite sheet
-    2: 3, // Diamonds -> position 3 in sprite sheet
-    3: 2, // Hearts -> position 2 in sprite sheet
-    4: 1, // Spades -> position 1 in sprite sheet
-  };
-  return mapping[logicalSuit];
+  return (suit - 1) * 13 + (value - 2);
 }
 
 function formatBid(bidValue: number, bidSuit: number): string {
@@ -550,4 +555,8 @@ function isBidHigher(
   newBidValue: number,
 ): boolean {
   return newBidValue >= currentBidValue + (newBidSuit > currentBidSuit ? 1 : 0);
+}
+
+function getSuitSortIndex(suit: number): number {
+  return [2, 1, 3, 4][suit - 1]; // todo: check if that's right
 }

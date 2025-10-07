@@ -33,6 +33,15 @@ var __makeTemplateObject = (this && this.__makeTemplateObject) || function (cook
     if (Object.defineProperty) { Object.defineProperty(cooked, "raw", { value: raw }); } else { cooked.raw = raw; }
     return cooked;
 };
+var __spreadArray = (this && this.__spreadArray) || function (to, from, pack) {
+    if (pack || arguments.length === 2) for (var i = 0, l = from.length, ar; i < l; i++) {
+        if (ar || !(i in from)) {
+            if (!ar) ar = Array.prototype.slice.call(from, 0, i);
+            ar[i] = from[i];
+        }
+    }
+    return to.concat(ar || Array.prototype.slice.call(from));
+};
 var html = String.raw;
 var suits = {
     1: {
@@ -88,14 +97,14 @@ var IsraeliWhist = /** @class */ (function (_super) {
         if (this.gamedatas.gamestate.name == "PlayerBid") {
             for (var playerId in this.gamedatas.players) {
                 var player = this.gamedatas.players[playerId];
-                this.updatePlayerBid(playerId, player.bid, 0); // Assuming bid_suit is 0 for now
+                this.updatePlayerBid(playerId, +player.bid_value, +player.bid_suit);
             }
         }
         else {
             for (var playerId in this.gamedatas.players) {
                 var player = this.gamedatas.players[playerId];
-                this.updateHighestBidState(playerId, player.bid, 0);
-                this.updatePlayerContract(playerId, player.tricks_won);
+                this.updateHighestBidState(playerId, +player.bid_value, +player.bid_suit);
+                this.updatePlayerContract(playerId, player.contract);
             }
         }
         // Setup game notifications to handle (see "setupNotifications" method below)
@@ -215,7 +224,11 @@ var IsraeliWhist = /** @class */ (function (_super) {
     IsraeliWhist.prototype.createTables = function () {
         var _this = this;
         this.getGameAreaElement().insertAdjacentHTML("beforeend", html(__makeTemplateObject([" <div id=\"player-tables\"></div> "], [" <div id=\"player-tables\"></div> "])));
-        Object.values(this.gamedatas.players).forEach(function (player, index) {
+        var players = __spreadArray([], Object.values(this.gamedatas.players), true);
+        while (+players[0].id != this.player_id) {
+            players.push(players.shift());
+        }
+        players.forEach(function (player, index) {
             document.getElementById("player-tables").insertAdjacentHTML("beforeend", html(__makeTemplateObject(["\n          <div\n            class=\"playertable whiteblock playertable_", "\"\n          >\n            <div class=\"playertablename\" style=\"color:#", ";\">\n              ", "\n            </div>\n            <div\n              class=\"playertablecard\"\n              id=\"playertablecard_", "\"\n            ></div>\n            <div class=\"playertablename\" id=\"hand_score_wrap_", "\">\n              <span class=\"hand_score_label\"></span>\n              <span id=\"hand_score_", "\"></span>\n            </div>\n          </div>\n        "], ["\n          <div\n            class=\"playertable whiteblock playertable_", "\"\n          >\n            <div class=\"playertablename\" style=\"color:#", ";\">\n              ", "\n            </div>\n            <div\n              class=\"playertablecard\"\n              id=\"playertablecard_", "\"\n            ></div>\n            <div class=\"playertablename\" id=\"hand_score_wrap_", "\">\n              <span class=\"hand_score_label\"></span>\n              <span id=\"hand_score_", "\"></span>\n            </div>\n          </div>\n        "]), ["S", "W", "N", "E"][index], player.color, player.name, player.id, player.id, player.id));
         });
         this.playersLineStocks = Object.keys(this.gamedatas.players).reduce(function (acc, playerId) {
@@ -233,6 +246,7 @@ var IsraeliWhist = /** @class */ (function (_super) {
             animationManager: this.animationManager,
             cardWidth: 72,
             cardHeight: 96,
+            cardBorderRadius: "3px",
             getId: function (_a) {
                 var id = _a.id;
                 return id;
@@ -245,8 +259,8 @@ var IsraeliWhist = /** @class */ (function (_super) {
                 var suit = card.type;
                 var value = card.type_arg;
                 var x = value - 2;
-                var y = getSpriteSheetSuitIndex(suit) - 1;
-                element.style.backgroundImage = "url(".concat(window.g_gamethemeurl, "img/cards.jpg)");
+                var y = suit - 1;
+                element.style.backgroundImage = "url(".concat(window.g_gamethemeurl, "img/cards2.jpg)");
                 element.style.backgroundPosition = "-".concat(x, "00% -").concat(y, "00%");
                 element.style.backgroundSize = "".concat(13 * 100, "% ").concat(4 * 100, "%");
             },
@@ -257,11 +271,17 @@ var IsraeliWhist = /** @class */ (function (_super) {
         var _this = this;
         this.getGameAreaElement().insertAdjacentHTML("beforeend", html(__makeTemplateObject(["\n        <div id=\"myhand_wrap\" class=\"whiteblock\">\n          <b id=\"myhand_label\">", "</b>\n          <div id=\"myhand\"></div>\n        </div>\n      "], ["\n        <div id=\"myhand_wrap\" class=\"whiteblock\">\n          <b id=\"myhand_label\">", "</b>\n          <div id=\"myhand\"></div>\n        </div>\n      "]), _("My hand")));
         // Initialize HandStock
-        this.handStock = new BgaCards.HandStock(this.cardManager, document.getElementById("myhand"), {});
+        this.handStock = new BgaCards.HandStock(this.cardManager, document.getElementById("myhand"), {
+            sort: function (a, b) {
+                return getSuitSortIndex(a.type) - getSuitSortIndex(b.type) ||
+                    a.type_arg - b.type_arg;
+            },
+        });
         this.handStock.setSelectionMode("single");
         this.handStock.onCardClick = function (card) {
-            _this.playersLineStocks[_this.player_id].addCard(card);
-            // this.bgaPerformAction("actPlayCard", { cardId: card.id }); // bind that again
+            // this.playersLineStocks[this.player_id].addCard(card); // todo: check how and if we can do optimistic update
+            _this.bgaPerformAction("actPlayCard", { cardId: card.id });
+            _this.handStock.unselectAll();
         };
         // Add cards to hand
         var hand = this.gamedatas.hand;
@@ -390,22 +410,16 @@ var IsraeliWhist = /** @class */ (function (_super) {
     return IsraeliWhist;
 }(GameGui));
 function cardId(suit, value) {
-    return (getSpriteSheetSuitIndex(suit) - 1) * 13 + (value - 2);
-}
-function getSpriteSheetSuitIndex(logicalSuit) {
-    var mapping = {
-        1: 4, // Clubs -> position 4 in sprite sheet
-        2: 3, // Diamonds -> position 3 in sprite sheet
-        3: 2, // Hearts -> position 2 in sprite sheet
-        4: 1, // Spades -> position 1 in sprite sheet
-    };
-    return mapping[logicalSuit];
+    return (suit - 1) * 13 + (value - 2);
 }
 function formatBid(bidValue, bidSuit) {
     return bidValue + suits[bidSuit].emoji;
 }
 function isBidHigher(currentBidSuit, currentBidValue, newBidSuit, newBidValue) {
     return newBidValue >= currentBidValue + (newBidSuit > currentBidSuit ? 1 : 0);
+}
+function getSuitSortIndex(suit) {
+    return [2, 1, 3, 4][suit - 1]; // todo: check if that's right
 }
 define([
     "dojo",

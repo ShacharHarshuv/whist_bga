@@ -15,10 +15,10 @@ interface ServerCard extends Card {
 
 interface IsraeliWhistPlayer extends Player {
   cards: Card[];
-  hand_size: number;
-  tricks_won: number;
-  bid: number;
-  score_round: number;
+  // values below need to be converted to numbers
+  contract: string;
+  bid_suit: string;
+  bid_value: string;
 }
 
 // todo: see if we can simplify this
