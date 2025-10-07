@@ -34,7 +34,7 @@ const suits = {
     name: "spade",
     emoji: "♠️",
   },
-};
+} as const;
 
 interface HighestBid {
   value: number;
