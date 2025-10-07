@@ -4,10 +4,13 @@
 
 interface Card {
   id: number;
-  location: string;
-  location_arg: number;
   type: number; // suit (1-4)
   type_arg: number; // value (2-14)
+}
+
+interface ServerCard extends Card {
+  location: string;
+  location_arg: number;
 }
 
 interface IsraeliWhistPlayer extends Player {
@@ -30,7 +33,7 @@ interface IsraeliWhistGamedatas extends Gamedatas<IsraeliWhistPlayer> {
   // Game specific data
   cards: { [cardId: number]: Card };
   hand: Card[];
-  cardsontable: Card[];
+  cardsontable: ServerCard[];
   trump: number;
   round: number;
   max_rounds: number;

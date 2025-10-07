@@ -57,15 +57,17 @@ class IsraeliWhist extends GameGui<IsraeliWhistGamedatas> {
   private notifqueue: any; // see if we can type it
   private animationManager: AnimationManager;
   private cardManager: CardManager<Card>;
-  private playerHand: HandStock<Card>;
+  private handStock: HandStock<Card>;
+  private playersLineStocks: Record<number, LineStock<Card>> = {};
 
   setup() {
     console.log("Setup: ", this.gamedatas);
     this.createTrumpIndication();
     this.updateTrumpSuit(this.gamedatas.trump);
 
-    this.createTables();
+    this.createCardsManager();
 
+    this.createTables();
     this.createPlayerHand();
 
     // Cards played on table
@@ -216,65 +218,12 @@ class IsraeliWhist extends GameGui<IsraeliWhistGamedatas> {
 
   private playCardOnTable(
     player_id: number,
-    color: number,
+    suit: number,
     value: number,
     card_id: number,
   ) {
-    this.addTableCard(value, color, player_id, player_id);
-
-    if (player_id != +this.player_id) {
-      (this as any).placeOnObject(
-        "cardontable_" + player_id,
-        "overall_player_board_" + player_id,
-      );
-    } else {
-      // Find the card in the player's hand and remove it
-      const cardInHand = this.playerHand
-        .getCards()
-        .find((card: Card) => card.id === card_id);
-      if (cardInHand) {
-        const cardElement = this.cardManager.getCardElement(cardInHand);
-        (this as any).placeOnObject("cardontable_" + player_id, cardElement);
-        this.playerHand.removeCard(cardInHand);
-      }
-    }
-
-    (this as any)
-      .slideToObject("cardontable_" + player_id, "playertablecard_" + player_id)
-      .play();
-  }
-
-  private addTableCard(
-    value: number,
-    suit: number,
-    card_player_id: number,
-    playerTableId: number,
-  ) {
-    const x = value - 2;
-    const y = suit - 1;
-    document
-      .getElementById("playertablecard_" + playerTableId)
-      .insertAdjacentHTML(
-        "beforeend",
-        html`<div
-          class="card cardontable"
-          id="cardontable_${card_player_id}"
-          style="background-position:-${x}00% -${y}00%"
-        ></div>`,
-      );
-  }
-
-  private onPlayerHandSelectionChanged(selection: Card[]) {
-    if (selection.length > 0) {
-      const canPlay = true;
-      if (canPlay) {
-        const cardId = selection[0].id;
-        this.bgaPerformAction("actPlayCard", { cardId });
-        this.playerHand.unselectAll();
-      } else {
-        this.playerHand.unselectAll();
-      }
-    }
+    const stock = this.playersLineStocks[player_id];
+    stock.addCard({ id: card_id, type: suit, type_arg: value });
   }
 
   private createTrumpIndication() {
@@ -327,19 +276,21 @@ class IsraeliWhist extends GameGui<IsraeliWhistGamedatas> {
         `,
       );
     });
+
+    this.playersLineStocks = Object.keys(this.gamedatas.players).reduce(
+      (acc: Record<number, LineStock<Card>>, playerId) => {
+        acc[+playerId] = new BgaCards.LineStock(
+          this.cardManager,
+          document.getElementById(`playertablecard_${playerId}`),
+          {},
+        );
+        return acc;
+      },
+      {},
+    );
   }
 
-  private createPlayerHand() {
-    this.getGameAreaElement().insertAdjacentHTML(
-      "beforeend",
-      html`
-        <div id="myhand_wrap" class="whiteblock">
-          <b id="myhand_label">${_("My hand")}</b>
-          <div id="myhand"></div>
-        </div>
-      `,
-    );
-
+  private createCardsManager() {
     this.animationManager = new BgaAnimations.Manager({
       animationsActive: () => this.bgaAnimationsActive(),
     });
@@ -364,23 +315,35 @@ class IsraeliWhist extends GameGui<IsraeliWhistGamedatas> {
       },
       isCardVisible: (card) => card.type > 0,
     });
+  }
+
+  private createPlayerHand() {
+    this.getGameAreaElement().insertAdjacentHTML(
+      "beforeend",
+      html`
+        <div id="myhand_wrap" class="whiteblock">
+          <b id="myhand_label">${_("My hand")}</b>
+          <div id="myhand"></div>
+        </div>
+      `,
+    );
 
     // Initialize HandStock
-    this.playerHand = new BgaCards.HandStock(
+    this.handStock = new BgaCards.HandStock(
       this.cardManager,
       document.getElementById("myhand"),
       {},
     );
-    this.playerHand.setSelectionMode("single");
-    this.playerHand.onSelectionChange = (selection) => {
-      console.log("selection", selection);
-      this.onPlayerHandSelectionChanged(selection);
+    this.handStock.setSelectionMode("single");
+    this.handStock.onCardClick = (card) => {
+      this.playersLineStocks[this.player_id].addCard(card);
+      // this.bgaPerformAction("actPlayCard", { cardId: card.id }); // bind that again
     };
 
     // Add cards to hand
     const { hand } = this.gamedatas;
     for (const card of hand) {
-      this.playerHand.addCard(card);
+      this.handStock.addCard(card);
     }
   }
 
@@ -485,15 +448,15 @@ class IsraeliWhist extends GameGui<IsraeliWhistGamedatas> {
 
   private notif_newHand(notif: any) {
     // Remove all cards from hand
-    const currentCards = this.playerHand.getCards();
+    const currentCards = this.handStock.getCards();
     for (const card of currentCards) {
-      this.playerHand.removeCard(card);
+      this.handStock.removeCard(card);
     }
 
     // Add new cards to hand
     for (const i in notif.cards) {
       const card = notif.cards[i];
-      this.playerHand.addCard(card);
+      this.handStock.addCard(card);
     }
   }
 

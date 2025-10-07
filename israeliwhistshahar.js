@@ -64,12 +64,16 @@ GameGui = (function () {
 var IsraeliWhist = /** @class */ (function (_super) {
     __extends(IsraeliWhist, _super);
     function IsraeliWhist() {
-        return _super !== null && _super.apply(this, arguments) || this;
+        var _this = _super !== null && _super.apply(this, arguments) || this;
+        _this.playersLineStocks = {};
+        return _this;
+        // #endregion
     }
     IsraeliWhist.prototype.setup = function () {
         console.log("Setup: ", this.gamedatas);
         this.createTrumpIndication();
         this.updateTrumpSuit(this.gamedatas.trump);
+        this.createCardsManager();
         this.createTables();
         this.createPlayerHand();
         // Cards played on table
@@ -193,45 +197,9 @@ var IsraeliWhist = /** @class */ (function (_super) {
     };
     // #endregion
     // #region UI
-    IsraeliWhist.prototype.playCardOnTable = function (player_id, color, value, card_id) {
-        this.addTableCard(value, color, player_id, player_id);
-        if (player_id != +this.player_id) {
-            this.placeOnObject("cardontable_" + player_id, "overall_player_board_" + player_id);
-        }
-        else {
-            // Find the card in the player's hand and remove it
-            var cardInHand = this.playerHand
-                .getCards()
-                .find(function (card) { return card.id === card_id; });
-            if (cardInHand) {
-                var cardElement = this.cardManager.getCardElement(cardInHand);
-                this.placeOnObject("cardontable_" + player_id, cardElement);
-                this.playerHand.removeCard(cardInHand);
-            }
-        }
-        this
-            .slideToObject("cardontable_" + player_id, "playertablecard_" + player_id)
-            .play();
-    };
-    IsraeliWhist.prototype.addTableCard = function (value, suit, card_player_id, playerTableId) {
-        var x = value - 2;
-        var y = suit - 1;
-        document
-            .getElementById("playertablecard_" + playerTableId)
-            .insertAdjacentHTML("beforeend", html(__makeTemplateObject(["<div\n          class=\"card cardontable\"\n          id=\"cardontable_", "\"\n          style=\"background-position:-", "00% -", "00%\"\n        ></div>"], ["<div\n          class=\"card cardontable\"\n          id=\"cardontable_", "\"\n          style=\"background-position:-", "00% -", "00%\"\n        ></div>"]), card_player_id, x, y));
-    };
-    IsraeliWhist.prototype.onPlayerHandSelectionChanged = function (selection) {
-        if (selection.length > 0) {
-            var canPlay = true;
-            if (canPlay) {
-                var cardId_1 = selection[0].id;
-                this.bgaPerformAction("actPlayCard", { cardId: cardId_1 });
-                this.playerHand.unselectAll();
-            }
-            else {
-                this.playerHand.unselectAll();
-            }
-        }
+    IsraeliWhist.prototype.playCardOnTable = function (player_id, suit, value, card_id) {
+        var stock = this.playersLineStocks[player_id];
+        stock.addCard({ id: card_id, type: suit, type_arg: value });
     };
     IsraeliWhist.prototype.createTrumpIndication = function () {
         this.getGameAreaElement().insertAdjacentHTML("beforeend", html(__makeTemplateObject(["<div id=\"trump-indication\"></div>"], ["<div id=\"trump-indication\"></div>"])));
@@ -245,14 +213,18 @@ var IsraeliWhist = /** @class */ (function (_super) {
         })();
     };
     IsraeliWhist.prototype.createTables = function () {
+        var _this = this;
         this.getGameAreaElement().insertAdjacentHTML("beforeend", html(__makeTemplateObject([" <div id=\"player-tables\"></div> "], [" <div id=\"player-tables\"></div> "])));
         Object.values(this.gamedatas.players).forEach(function (player, index) {
             document.getElementById("player-tables").insertAdjacentHTML("beforeend", html(__makeTemplateObject(["\n          <div\n            class=\"playertable whiteblock playertable_", "\"\n          >\n            <div class=\"playertablename\" style=\"color:#", ";\">\n              ", "\n            </div>\n            <div\n              class=\"playertablecard\"\n              id=\"playertablecard_", "\"\n            ></div>\n            <div class=\"playertablename\" id=\"hand_score_wrap_", "\">\n              <span class=\"hand_score_label\"></span>\n              <span id=\"hand_score_", "\"></span>\n            </div>\n          </div>\n        "], ["\n          <div\n            class=\"playertable whiteblock playertable_", "\"\n          >\n            <div class=\"playertablename\" style=\"color:#", ";\">\n              ", "\n            </div>\n            <div\n              class=\"playertablecard\"\n              id=\"playertablecard_", "\"\n            ></div>\n            <div class=\"playertablename\" id=\"hand_score_wrap_", "\">\n              <span class=\"hand_score_label\"></span>\n              <span id=\"hand_score_", "\"></span>\n            </div>\n          </div>\n        "]), ["S", "W", "N", "E"][index], player.color, player.name, player.id, player.id, player.id));
         });
+        this.playersLineStocks = Object.keys(this.gamedatas.players).reduce(function (acc, playerId) {
+            acc[+playerId] = new BgaCards.LineStock(_this.cardManager, document.getElementById("playertablecard_".concat(playerId)), {});
+            return acc;
+        }, {});
     };
-    IsraeliWhist.prototype.createPlayerHand = function () {
+    IsraeliWhist.prototype.createCardsManager = function () {
         var _this = this;
-        this.getGameAreaElement().insertAdjacentHTML("beforeend", html(__makeTemplateObject(["\n        <div id=\"myhand_wrap\" class=\"whiteblock\">\n          <b id=\"myhand_label\">", "</b>\n          <div id=\"myhand\"></div>\n        </div>\n      "], ["\n        <div id=\"myhand_wrap\" class=\"whiteblock\">\n          <b id=\"myhand_label\">", "</b>\n          <div id=\"myhand\"></div>\n        </div>\n      "]), _("My hand")));
         this.animationManager = new BgaAnimations.Manager({
             animationsActive: function () { return _this.bgaAnimationsActive(); },
         });
@@ -280,18 +252,22 @@ var IsraeliWhist = /** @class */ (function (_super) {
             },
             isCardVisible: function (card) { return card.type > 0; },
         });
+    };
+    IsraeliWhist.prototype.createPlayerHand = function () {
+        var _this = this;
+        this.getGameAreaElement().insertAdjacentHTML("beforeend", html(__makeTemplateObject(["\n        <div id=\"myhand_wrap\" class=\"whiteblock\">\n          <b id=\"myhand_label\">", "</b>\n          <div id=\"myhand\"></div>\n        </div>\n      "], ["\n        <div id=\"myhand_wrap\" class=\"whiteblock\">\n          <b id=\"myhand_label\">", "</b>\n          <div id=\"myhand\"></div>\n        </div>\n      "]), _("My hand")));
         // Initialize HandStock
-        this.playerHand = new BgaCards.HandStock(this.cardManager, document.getElementById("myhand"), {});
-        this.playerHand.setSelectionMode("single");
-        this.playerHand.onSelectionChange = function (selection) {
-            console.log("selection", selection);
-            _this.onPlayerHandSelectionChanged(selection);
+        this.handStock = new BgaCards.HandStock(this.cardManager, document.getElementById("myhand"), {});
+        this.handStock.setSelectionMode("single");
+        this.handStock.onCardClick = function (card) {
+            _this.playersLineStocks[_this.player_id].addCard(card);
+            // this.bgaPerformAction("actPlayCard", { cardId: card.id }); // bind that again
         };
         // Add cards to hand
         var hand = this.gamedatas.hand;
         for (var _i = 0, hand_1 = hand; _i < hand_1.length; _i++) {
             var card = hand_1[_i];
-            this.playerHand.addCard(card);
+            this.handStock.addCard(card);
         }
     };
     IsraeliWhist.prototype.createPlayersPanels = function () {
@@ -355,15 +331,15 @@ var IsraeliWhist = /** @class */ (function (_super) {
     // #region Notifications
     IsraeliWhist.prototype.notif_newHand = function (notif) {
         // Remove all cards from hand
-        var currentCards = this.playerHand.getCards();
+        var currentCards = this.handStock.getCards();
         for (var _i = 0, currentCards_1 = currentCards; _i < currentCards_1.length; _i++) {
             var card = currentCards_1[_i];
-            this.playerHand.removeCard(card);
+            this.handStock.removeCard(card);
         }
         // Add new cards to hand
         for (var i in notif.cards) {
             var card = notif.cards[i];
-            this.playerHand.addCard(card);
+            this.handStock.addCard(card);
         }
     };
     IsraeliWhist.prototype.notif_playCard = function (notif) {
