@@ -217,7 +217,7 @@ class Game extends \Bga\GameFramework\Table
 
         $result["roundNumber"] = $this->getGameStateValue("roundNumber");
 
-        $result["round_trump"] = $this->getGameStateValue("trumpSuit");
+        $result["trump"] = $this->getGameStateValue("trumpSuit");
 
         // todo: what is this for?
         // foreach ($result["players"] as $player_id => $player) {

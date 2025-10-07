@@ -45,7 +45,6 @@ interface HighestBid {
 let highestBid: HighestBid | null = null;
 let contractsSum = 0;
 let totalContracts = 0;
-let playerHand: any;
 
 const cardwidth = 72;
 const cardheight = 96;
@@ -58,22 +57,17 @@ GameGui = (function () {
 })();
 
 class IsraeliWhist extends GameGui<IsraeliWhistGamedatas> {
-  // private players: { [playerId: number]: IsraeliWhistPlayer };
-  // private scoreCtrl: { [playerId: string]: any };
-  // private contract_counter: { [playerId: string]: any };
-  // private tricks_counter: { [playerId: string]: any };
-  // private statusBar: any;
   private notifqueue: any; // see if we can type it
+  private playerHand: any; // todo: type it?
 
-  setup(gamedatas) {
-    console.log("Starting game setup!", gamedatas);
+  setup() {
+    console.log("Setup: ", this.gamedatas);
+    this.createTrumpIndication();
+    this.updateTrumpSuit(this.gamedatas.trump);
 
-    createTrumpIndication(this.getGameAreaElement());
-    updateTrumpSuit(gamedatas.trump);
+    this.createTables();
 
-    createTables((this as any).getGameAreaElement(), gamedatas.players);
-
-    createPlayerHand(this, gamedatas.hand);
+    this.createPlayerHand();
 
     // Cards played on table
     for (let i in this.gamedatas.cardsontable) {
@@ -84,28 +78,26 @@ class IsraeliWhist extends GameGui<IsraeliWhistGamedatas> {
       this.playCardOnTable(player_id, color, value, card.id);
     }
 
-    createPlayersPanels(gamedatas.players, (playerId) =>
-      (this as any).getPlayerPanelElement(playerId),
-    );
+    this.createPlayersPanels();
 
-    if (gamedatas.gamestate.name == "PlayerBid") {
-      for (const playerId in gamedatas.players) {
-        const player = gamedatas.players[playerId];
-        updatePlayerBid(playerId, player.bid, 0); // Assuming bid_suit is 0 for now
+    if (this.gamedatas.gamestate.name == "PlayerBid") {
+      for (const playerId in this.gamedatas.players) {
+        const player = this.gamedatas.players[playerId];
+        this.updatePlayerBid(playerId, player.bid, 0); // Assuming bid_suit is 0 for now
       }
     } else {
-      for (const playerId in gamedatas.players) {
-        const player = gamedatas.players[playerId];
-        updateHighestBidState(playerId, player.bid, 0);
-        updatePlayerContract(playerId, player.tricks_won);
+      for (const playerId in this.gamedatas.players) {
+        const player = this.gamedatas.players[playerId];
+        this.updateHighestBidState(playerId, player.bid, 0);
+        this.updatePlayerContract(playerId, player.tricks_won);
       }
     }
 
     // Setup game notifications to handle (see "setupNotifications" method below)
     this.setupNotifications();
-
-    console.log("Ending game setup");
   }
+
+  // #region Game states
 
   public onEnteringState(stateName: string, args: any) {
     console.log("Entering state: " + stateName);
@@ -219,7 +211,10 @@ class IsraeliWhist extends GameGui<IsraeliWhistGamedatas> {
     }
   }
 
-  // Utility methods
+  // #endregion
+
+  // #region UI
+
   private playCardOnTable(
     player_id: number,
     color: number,
@@ -239,7 +234,7 @@ class IsraeliWhist extends GameGui<IsraeliWhistGamedatas> {
           "cardontable_" + player_id,
           "myhand_item_" + card_id,
         );
-        playerHand.removeFromStockById(card_id);
+        this.playerHand.removeFromStockById(card_id);
       }
     }
 
@@ -269,42 +264,225 @@ class IsraeliWhist extends GameGui<IsraeliWhistGamedatas> {
   }
 
   private onPlayerHandSelectionChanged() {
-    const items = playerHand.getSelectedItems();
+    const items = this.playerHand.getSelectedItems();
 
     if (items.length > 0) {
       const canPlay = true;
       if (canPlay) {
         const cardId = items[0].id;
         (this as any).bgaPerformAction("actPlayCard", { cardId });
-        playerHand.unselectAll();
+        this.playerHand.unselectAll();
       } else {
-        playerHand.unselectAll();
+        this.playerHand.unselectAll();
       }
     }
   }
 
-  // Framework methods - these are provided by ebg.core.gamegui in the BGA environment
-  // We use type assertions to access them since they're added by the BGA framework at runtime
-
-  private getCardUniqueId(color: number, value: number): number {
-    return cardId(color, value);
+  private createTrumpIndication() {
+    this.getGameAreaElement().insertAdjacentHTML(
+      "beforeend",
+      html`<div id="trump-indication"></div>`,
+    );
   }
 
+  private updateTrumpSuit(newTrumpSuit: number) {
+    document.getElementById("trump-indication").innerHTML = (() => {
+      if (!+newTrumpSuit) {
+        return html``;
+      }
+
+      return html`
+        <b>👑 Trump: </b>
+        <span id="trump-indication-suit">${suits[+newTrumpSuit].emoji}</span>
+      `;
+    })();
+  }
+
+  private createTables() {
+    this.getGameAreaElement().insertAdjacentHTML(
+      "beforeend",
+      html` <div id="player-tables"></div> `,
+    );
+
+    Object.values(this.gamedatas.players).forEach((player, index) => {
+      document.getElementById("player-tables").insertAdjacentHTML(
+        "beforeend",
+        html`
+          <div
+            class="playertable whiteblock playertable_${["S", "W", "N", "E"][
+              index
+            ]}"
+          >
+            <div class="playertablename" style="color:#${player.color};">
+              ${player.name}
+            </div>
+            <div
+              class="playertablecard"
+              id="playertablecard_${player.id}"
+            ></div>
+            <div class="playertablename" id="hand_score_wrap_${player.id}">
+              <span class="hand_score_label"></span>
+              <span id="hand_score_${player.id}"></span>
+            </div>
+          </div>
+        `,
+      );
+    });
+  }
+
+  private createPlayerHand() {
+    this.getGameAreaElement().insertAdjacentHTML(
+      "beforeend",
+      html`
+        <div id="myhand_wrap" class="whiteblock">
+          <b id="myhand_label">${_("My hand")}</b>
+          <div id="myhand"></div>
+        </div>
+      `,
+    );
+
+    this.playerHand = new (ebg as any).stock();
+    this.playerHand.create(
+      this,
+      document.getElementById("myhand"),
+      cardwidth,
+      cardheight,
+    );
+    this.playerHand.image_items_per_row = 13;
+
+    for (let suit = 1; suit <= 4; suit++) {
+      for (let value = 2; value <= 14; value++) {
+        const card_type_id = cardId(suit, value);
+        this.playerHand.addItemType(
+          card_type_id,
+          card_type_id,
+          (window as any).g_gamethemeurl + "img/cards.jpg",
+          card_type_id,
+        );
+      }
+    }
+
+    const { hand } = this.gamedatas;
+    for (const card of hand) {
+      const suit = +card.type;
+      const value = +card.type_arg;
+      this.playerHand.addToStockWithId(cardId(suit, value), card.id);
+    }
+
+    dojo.connect(
+      this.playerHand,
+      "onChangeSelection",
+      this.onPlayerHandSelectionChanged,
+    );
+  }
+
+  private createPlayersPanels() {
+    const { players } = this.gamedatas;
+    for (const playerId in players) {
+      this.getPlayerPanelElement(+playerId).insertAdjacentHTML(
+        "beforeend",
+        html`<div class="player-panel" id="player_panel_${playerId}">
+          <div id="bid"></div>
+          <div id="contract"></div>
+        </div>`,
+      );
+    }
+  }
+
+  private updatePlayerBid(
+    playerId: number | string,
+    bidValue: number,
+    bidSuit: number,
+  ) {
+    const getBidText = () => {
+      if (bidValue < 0) {
+        return html`<i>Passed<i></i></i>`;
+      } else if (bidValue == 0) {
+        return html``;
+      } else {
+        return html`<b>Bid:</b> ${formatBid(bidValue, bidSuit)}`;
+      }
+    };
+
+    this.updatePanelElement(playerId, "bid", getBidText());
+    this.updateHighestBidState(playerId, bidValue, bidSuit);
+  }
+
+  private updateHighestBidState(
+    playerId: number | string,
+    bidValue: number,
+    bidSuit: number,
+  ) {
+    if (
+      bidValue > 0 &&
+      (!highestBid ||
+        isBidHigher(highestBid.suit, highestBid.value, bidSuit, bidValue))
+    ) {
+      highestBid = {
+        value: +bidValue,
+        suit: +bidSuit,
+        playerId,
+      };
+    }
+  }
+
+  private updatePlayerContract(
+    playerId: number | string,
+    value: number | string,
+  ) {
+    console.log("updatePlayerContract", playerId, value);
+    if (+value < 0) {
+      this.updatePanelElement(playerId, "contract", html``);
+      return;
+    }
+    contractsSum += +value;
+    totalContracts++;
+    this.updatePanelElement(
+      playerId,
+      "contract",
+      html`<b>Contract:</b> ${value}`,
+    );
+  }
+
+  private updatePanelElement(
+    playerId: number | string,
+    innerId: string,
+    newValue: string,
+  ) {
+    const element = document.querySelector(
+      `#player_panel_${playerId} #${innerId}`,
+    );
+    if (!element) {
+      throw new Error(
+        `Element not found: #player_panel_${playerId} #${innerId}`,
+      );
+    }
+    element.innerHTML = newValue;
+  }
+
+  // #endregion
+
+  // #region Framework methods - these are provided by ebg.core.gamegui in the BGA environment
+  // We use type assertions to access them since they're added by the BGA framework at runtime
+
   public setupNotifications() {
-    (this as any).bgaSetupPromiseNotifications(); // todo
+    this.bgaSetupPromiseNotifications();
     this.notifqueue.setSynchronous("trickWin", 1000);
     this.notifqueue.setSynchronous("playCard", 500);
   }
 
-  // Notification handlers
+  // #endregion
+
+  // #region Notifications
+
   private notif_newHand(notif: any) {
-    playerHand.removeAll();
+    this.playerHand.removeAll();
 
     for (const i in notif.cards) {
       const card = notif.cards[i];
       const color = card.type;
       const value = card.type_arg;
-      playerHand.addToStockWithId(this.getCardUniqueId(color, value), card.id);
+      this.playerHand.addToStockWithId(cardId(color, value), card.id);
     }
   }
 
@@ -318,18 +496,18 @@ class IsraeliWhist extends GameGui<IsraeliWhistGamedatas> {
   }
 
   private notif_playerPass(notif: any) {
-    updatePlayerBid(notif.player_id, -2, 0);
+    this.updatePlayerBid(notif.player_id, -2, 0);
   }
 
   private notif_playerBid(notif: any) {
-    updatePlayerBid(notif.player_id, notif.value, notif.suit);
+    this.updatePlayerBid(notif.player_id, notif.value, notif.suit);
   }
 
   private notif_bidWon(notif: any) {
     for (const playerId in this.gamedatas.players) {
-      updatePlayerBid(playerId, 0, 0);
+      this.updatePlayerBid(playerId, 0, 0);
     }
-    updateTrumpSuit(notif.suit);
+    this.updateTrumpSuit(notif.suit);
   }
 
   private notif_trickWin(notif: any) {
@@ -339,10 +517,11 @@ class IsraeliWhist extends GameGui<IsraeliWhistGamedatas> {
   private notif_giveAllCardsToPlayer(notif: any) {
     const winner_id = notif.player_id;
     for (const player_id in this.gamedatas.players) {
-      const anim = (this as any).slideToObject(
+      const anim = this.slideToObject(
         "cardontable_" + player_id,
         "overall_player_board_" + winner_id,
       );
+      // @ts-ignore -- todo: fix
       dojo.connect(anim, "onEnd", function (node: any) {
         dojo.destroy(node);
       });
@@ -366,170 +545,10 @@ class IsraeliWhist extends GameGui<IsraeliWhistGamedatas> {
   }
 
   private notif_playerContract(notif: any) {
-    updatePlayerContract(notif.player_id, notif.value);
-  }
-}
-
-// Utility functions
-function createTables(
-  gameAreaElement: HTMLElement,
-  players: { [playerId: number]: IsraeliWhistPlayer },
-) {
-  gameAreaElement.insertAdjacentHTML(
-    "beforeend",
-    html` <div id="player-tables"></div> `,
-  );
-
-  Object.values(players).forEach((player, index) => {
-    document.getElementById("player-tables").insertAdjacentHTML(
-      "beforeend",
-      html`
-        <div
-          class="playertable whiteblock playertable_${["S", "W", "N", "E"][
-            index
-          ]}"
-        >
-          <div class="playertablename" style="color:#${player.color};">
-            ${player.name}
-          </div>
-          <div class="playertablecard" id="playertablecard_${player.id}"></div>
-          <div class="playertablename" id="hand_score_wrap_${player.id}">
-            <span class="hand_score_label"></span>
-            <span id="hand_score_${player.id}"></span>
-          </div>
-        </div>
-      `,
-    );
-  });
-}
-
-function createPlayerHand(page: any, hand: Card[]) {
-  page.getGameAreaElement().insertAdjacentHTML(
-    "beforeend",
-    html`
-      <div id="myhand_wrap" class="whiteblock">
-        <b id="myhand_label">${_("My hand")}</b>
-        <div id="myhand"></div>
-      </div>
-    `,
-  );
-
-  playerHand = new (ebg as any).stock();
-  playerHand.create(
-    page,
-    document.getElementById("myhand"),
-    cardwidth,
-    cardheight,
-  );
-  playerHand.image_items_per_row = 13;
-
-  for (let suit = 1; suit <= 4; suit++) {
-    for (let value = 2; value <= 14; value++) {
-      const card_type_id = cardId(suit, value);
-      playerHand.addItemType(
-        card_type_id,
-        card_type_id,
-        (window as any).g_gamethemeurl + "img/cards.jpg",
-        card_type_id,
-      );
-    }
+    this.updatePlayerContract(notif.player_id, notif.value);
   }
 
-  console.log("hand", hand);
-  for (const card of hand) {
-    const suit = +card.type;
-    const value = +card.type_arg;
-    playerHand.addToStockWithId(cardId(suit, value), card.id);
-  }
-
-  dojo.connect(
-    playerHand,
-    "onChangeSelection",
-    page.onPlayerHandSelectionChanged,
-  );
-
-  return playerHand;
-}
-
-function createPlayersPanels(
-  players: { [playerId: number]: IsraeliWhistPlayer },
-  getPlayerPanelElement: (playerId: number | string) => HTMLElement,
-) {
-  for (const playerId in players) {
-    const player = players[playerId];
-    getPlayerPanelElement(playerId).insertAdjacentHTML(
-      "beforeend",
-      html`<div class="player-panel" id="player_panel_${playerId}">
-        <div id="bid"></div>
-        <div id="contract"></div>
-      </div>`,
-    );
-  }
-}
-
-function updatePlayerBid(
-  playerId: number | string,
-  bidValue: number,
-  bidSuit: number,
-) {
-  const getBidText = () => {
-    if (bidValue < 0) {
-      return html`<i>Passed<i></i></i>`;
-    } else if (bidValue == 0) {
-      return html``;
-    } else {
-      return html`<b>Bid:</b> ${formatBid(bidValue, bidSuit)}`;
-    }
-  };
-
-  updatePanelElement(playerId, "bid", getBidText());
-  updateHighestBidState(playerId, bidValue, bidSuit);
-}
-
-function updateHighestBidState(
-  playerId: number | string,
-  bidValue: number,
-  bidSuit: number,
-) {
-  if (
-    bidValue > 0 &&
-    (!highestBid ||
-      isBidHigher(highestBid.suit, highestBid.value, bidSuit, bidValue))
-  ) {
-    highestBid = {
-      value: +bidValue,
-      suit: +bidSuit,
-      playerId,
-    };
-  }
-}
-
-function updatePlayerContract(
-  playerId: number | string,
-  value: number | string,
-) {
-  console.log("updatePlayerContract", playerId, value);
-  if (+value < 0) {
-    updatePanelElement(playerId, "contract", html``);
-    return;
-  }
-  contractsSum += +value;
-  totalContracts++;
-  updatePanelElement(playerId, "contract", html`<b>Contract:</b> ${value}`);
-}
-
-function updatePanelElement(
-  playerId: number | string,
-  innerId: string,
-  newValue: string,
-) {
-  const element = document.querySelector(
-    `#player_panel_${playerId} #${innerId}`,
-  );
-  if (!element) {
-    throw new Error(`Element not found: #player_panel_${playerId} #${innerId}`);
-  }
-  element.innerHTML = newValue;
+  // #endregion
 }
 
 function cardId(suit: number, value: number): number {
@@ -557,25 +576,4 @@ function isBidHigher(
   newBidValue: number,
 ): boolean {
   return newBidValue >= currentBidValue + (newBidSuit > currentBidSuit ? 1 : 0);
-}
-
-function createTrumpIndication(gameAreaElement: HTMLElement) {
-  gameAreaElement.insertAdjacentHTML(
-    "beforeend",
-    html`<div id="trump-indication"></div>`,
-  );
-}
-
-function updateTrumpSuit(newTrumpSuit: number) {
-  console.log("updateTrumpSuit", newTrumpSuit);
-  document.getElementById("trump-indication").innerHTML = (() => {
-    if (!+newTrumpSuit) {
-      return html``;
-    }
-
-    return html`
-      <b>👑 Trump: </b>
-      <span id="trump-indication-suit">${suits[+newTrumpSuit].emoji}</span>
-    `;
-  })();
 }
