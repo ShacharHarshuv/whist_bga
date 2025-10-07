@@ -12,6 +12,8 @@
     "bga-framework.d.ts",
     "src/israeliwhistshahar.d.ts",
     "src/israeliwhistshahar.ts",
-    "src/define.ts"
+    "src/define.ts",
+    "src/bga-cards.d.ts",
+    "src/bga-animations.d.ts"
   ]
 }

@@ -6,8 +6,8 @@ interface Card {
   id: number;
   location: string;
   location_arg: number;
-  type: number;
-  type_arg: number;
+  type: number; // suit (1-4)
+  type_arg: number; // value (2-14)
 }
 
 interface IsraeliWhistPlayer extends Player {

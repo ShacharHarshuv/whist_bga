@@ -55,8 +55,6 @@ var suits = {
 var highestBid = null;
 var contractsSum = 0;
 var totalContracts = 0;
-var cardwidth = 72;
-var cardheight = 96;
 // @ts-ignore
 GameGui = (function () {
     // this hack required so we fake extend GameGui
@@ -201,9 +199,14 @@ var IsraeliWhist = /** @class */ (function (_super) {
             this.placeOnObject("cardontable_" + player_id, "overall_player_board_" + player_id);
         }
         else {
-            if ($("myhand_item_" + card_id)) {
-                this.placeOnObject("cardontable_" + player_id, "myhand_item_" + card_id);
-                this.playerHand.removeFromStockById(card_id);
+            // Find the card in the player's hand and remove it
+            var cardInHand = this.playerHand
+                .getCards()
+                .find(function (card) { return card.id === card_id; });
+            if (cardInHand) {
+                var cardElement = this.cardManager.getCardElement(cardInHand);
+                this.placeOnObject("cardontable_" + player_id, cardElement);
+                this.playerHand.removeCard(cardInHand);
             }
         }
         this
@@ -217,12 +220,11 @@ var IsraeliWhist = /** @class */ (function (_super) {
             .getElementById("playertablecard_" + playerTableId)
             .insertAdjacentHTML("beforeend", html(__makeTemplateObject(["<div\n          class=\"card cardontable\"\n          id=\"cardontable_", "\"\n          style=\"background-position:-", "00% -", "00%\"\n        ></div>"], ["<div\n          class=\"card cardontable\"\n          id=\"cardontable_", "\"\n          style=\"background-position:-", "00% -", "00%\"\n        ></div>"]), card_player_id, x, y));
     };
-    IsraeliWhist.prototype.onPlayerHandSelectionChanged = function () {
-        var items = this.playerHand.getSelectedItems();
-        if (items.length > 0) {
+    IsraeliWhist.prototype.onPlayerHandSelectionChanged = function (selection) {
+        if (selection.length > 0) {
             var canPlay = true;
             if (canPlay) {
-                var cardId_1 = items[0].id;
+                var cardId_1 = selection[0].id;
                 this.bgaPerformAction("actPlayCard", { cardId: cardId_1 });
                 this.playerHand.unselectAll();
             }
@@ -249,24 +251,48 @@ var IsraeliWhist = /** @class */ (function (_super) {
         });
     };
     IsraeliWhist.prototype.createPlayerHand = function () {
+        var _this = this;
         this.getGameAreaElement().insertAdjacentHTML("beforeend", html(__makeTemplateObject(["\n        <div id=\"myhand_wrap\" class=\"whiteblock\">\n          <b id=\"myhand_label\">", "</b>\n          <div id=\"myhand\"></div>\n        </div>\n      "], ["\n        <div id=\"myhand_wrap\" class=\"whiteblock\">\n          <b id=\"myhand_label\">", "</b>\n          <div id=\"myhand\"></div>\n        </div>\n      "]), _("My hand")));
-        this.playerHand = new ebg.stock();
-        this.playerHand.create(this, document.getElementById("myhand"), cardwidth, cardheight);
-        this.playerHand.image_items_per_row = 13;
-        for (var suit = 1; suit <= 4; suit++) {
-            for (var value = 2; value <= 14; value++) {
-                var card_type_id = cardId(suit, value);
-                this.playerHand.addItemType(card_type_id, card_type_id, window.g_gamethemeurl + "img/cards.jpg", card_type_id);
-            }
-        }
+        this.animationManager = new BgaAnimations.Manager({
+            animationsActive: function () { return _this.bgaAnimationsActive(); },
+        });
+        // Initialize BgaCards Manager
+        this.cardManager = new BgaCards.Manager({
+            animationManager: this.animationManager,
+            cardWidth: 72,
+            cardHeight: 96,
+            getId: function (_a) {
+                var id = _a.id;
+                return id;
+            },
+            setupDiv: function (card, element) {
+                element.classList.add("card");
+                element.dataset.cardId = card.id.toString();
+            },
+            setupFrontDiv: function (card, element) {
+                var suit = card.type;
+                var value = card.type_arg;
+                var x = value - 2;
+                var y = getSpriteSheetSuitIndex(suit) - 1;
+                element.style.backgroundImage = "url(".concat(window.g_gamethemeurl, "img/cards.jpg)");
+                element.style.backgroundPosition = "-".concat(x, "00% -").concat(y, "00%");
+                element.style.backgroundSize = "".concat(13 * 100, "% ").concat(4 * 100, "%");
+            },
+            isCardVisible: function (card) { return card.type > 0; },
+        });
+        // Initialize HandStock
+        this.playerHand = new BgaCards.HandStock(this.cardManager, document.getElementById("myhand"), {});
+        this.playerHand.setSelectionMode("single");
+        this.playerHand.onSelectionChange = function (selection) {
+            console.log("selection", selection);
+            _this.onPlayerHandSelectionChanged(selection);
+        };
+        // Add cards to hand
         var hand = this.gamedatas.hand;
         for (var _i = 0, hand_1 = hand; _i < hand_1.length; _i++) {
             var card = hand_1[_i];
-            var suit = +card.type;
-            var value = +card.type_arg;
-            this.playerHand.addToStockWithId(cardId(suit, value), card.id);
+            this.playerHand.addCard(card);
         }
-        dojo.connect(this.playerHand, "onChangeSelection", this.onPlayerHandSelectionChanged);
     };
     IsraeliWhist.prototype.createPlayersPanels = function () {
         var players = this.gamedatas.players;
@@ -328,12 +354,16 @@ var IsraeliWhist = /** @class */ (function (_super) {
     // #endregion
     // #region Notifications
     IsraeliWhist.prototype.notif_newHand = function (notif) {
-        this.playerHand.removeAll();
+        // Remove all cards from hand
+        var currentCards = this.playerHand.getCards();
+        for (var _i = 0, currentCards_1 = currentCards; _i < currentCards_1.length; _i++) {
+            var card = currentCards_1[_i];
+            this.playerHand.removeCard(card);
+        }
+        // Add new cards to hand
         for (var i in notif.cards) {
             var card = notif.cards[i];
-            var color = card.type;
-            var value = card.type_arg;
-            this.playerHand.addToStockWithId(cardId(color, value), card.id);
+            this.playerHand.addCard(card);
         }
     };
     IsraeliWhist.prototype.notif_playCard = function (notif) {
@@ -406,7 +436,10 @@ define([
     "dojo/_base/declare",
     "ebg/core/gamegui",
     "ebg/counter",
-    "ebg/stock",
-], function (dojo, declare) {
+    getLibUrl("bga-animations", "1.x"), // the lib uses bga-animations so this is required!
+    getLibUrl("bga-cards", "1.x"),
+], function (dojo, declare, gamegui, counter, BgaAnimations, BgaCards) {
+    window.BgaAnimations = BgaAnimations; // todo: do we need those "hacks"?
+    window.BgaCards = BgaCards;
     return declare("bgagame.israeliwhistshahar", ebg.core.gamegui, new IsraeliWhist());
 });

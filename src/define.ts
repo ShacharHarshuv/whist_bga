@@ -3,8 +3,11 @@ define([
   "dojo/_base/declare",
   "ebg/core/gamegui",
   "ebg/counter",
-  "ebg/stock",
-], function (dojo, declare) {
+  getLibUrl("bga-animations", "1.x"), // the lib uses bga-animations so this is required!
+  getLibUrl("bga-cards", "1.x"),
+], function (dojo, declare, gamegui, counter, BgaAnimations, BgaCards) {
+  (window as any).BgaAnimations = BgaAnimations; // todo: do we need those "hacks"?
+  (window as any).BgaCards = BgaCards;
   return declare(
     "bgagame.israeliwhistshahar",
     ebg.core.gamegui,
