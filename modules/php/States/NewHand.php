@@ -33,6 +33,7 @@ class NewHand extends \Bga\GameFramework\States\GameState
             // Notify player about his cards
             $this->game->notify->player($player_id, "newHand", "", [
                 "cards" => $cards,
+                "roundNumber" => $this->game->getGameStateValue("roundNumber"),
             ]);
         }
 

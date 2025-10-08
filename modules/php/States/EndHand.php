@@ -84,13 +84,6 @@ class EndHand extends \Bga\GameFramework\States\GameState
         } else {
             // Next round
             $this->game->setGameStateValue("roundNumber", $round + 1);
-            $this->notify->all(
-                "newRound",
-                clienttranslate('Round ${roundNumber}'),
-                [
-                    "roundNumber" => $round + 1,
-                ]
-            );
             return NewHand::class;
         }
     }

@@ -243,14 +243,14 @@ class IsraeliWhist extends GameGui<IsraeliWhistGamedatas> {
 
   // #region UI
 
-  private playCardOnTable(
+  private async playCardOnTable(
     player_id: number,
     suit: number,
     value: number,
     card_id: number,
   ) {
     const stock = this.tableStocks[player_id];
-    stock.addCard({ id: card_id, type: suit, type_arg: value });
+    await stock.addCard({ id: card_id, type: suit, type_arg: value });
   }
 
   private createTrumpIndication() {
@@ -523,39 +523,13 @@ class IsraeliWhist extends GameGui<IsraeliWhistGamedatas> {
 
   public setupNotifications() {
     this.bgaSetupPromiseNotifications();
-    this.notifqueue.setSynchronous("trickWin", 1000);
-    this.notifqueue.setSynchronous("playCard", 500);
   }
 
   // #endregion
 
   // #region Notifications
 
-  private notif_newHand(notif) {
-    // Remove all cards from hand
-    const currentCards = this.handStock.getCards();
-    for (const card of currentCards) {
-      this.handStock.removeCard(card);
-    }
-
-    // Add new cards to hand
-    for (const i in notif.cards) {
-      const card = notif.cards[i];
-      this.handStock.addCard(card);
-    }
-  }
-
-  private notif_playCard(notif) {
-    if (!this.trickSuit) {
-      this.trickSuit = notif.color;
-    }
-    this.playCardOnTable(
-      notif.player_id,
-      notif.color,
-      notif.value,
-      notif.card_id,
-    );
-  }
+  // #region Bidding round
 
   private notif_playerPass(notif) {
     this.updatePlayerBid(notif.player_id, -2, 0);
@@ -572,7 +546,33 @@ class IsraeliWhist extends GameGui<IsraeliWhistGamedatas> {
     this.updateTrumpSuit(notif.suit);
   }
 
-  private notif_trickWin(notif: { player_id: string }) {
+  // #endregion
+
+  // #region Contract Round
+
+  private notif_playerContract(notif) {
+    this.updatePlayerContract(notif.player_id, notif.value);
+    this.updatePlayerTricks(notif.player_id, 0);
+  }
+
+  // #endregion
+
+  // #region playing tricks
+
+  private async notif_playCard(notif) {
+    if (!this.trickSuit) {
+      this.trickSuit = notif.color;
+    }
+    await this.playCardOnTable(
+      notif.player_id,
+      notif.color,
+      notif.value,
+      notif.card_id,
+    );
+    await timeout(500);
+  }
+
+  private async notif_trickWin(notif: { player_id: string }) {
     this.trickSuit = null;
     this.updatePlayerTricks(
       +notif.player_id,
@@ -582,10 +582,17 @@ class IsraeliWhist extends GameGui<IsraeliWhistGamedatas> {
       stock.getCards(),
     );
     const voidStock = this.voidStocks[notif.player_id];
-    for (const card of cardsToCollect) {
-      voidStock.addCard(card);
-    }
+    await Promise.all(cardsToCollect.map((card) => voidStock.addCard(card)));
   }
+
+  // #endregion
+
+  // #region end hand
+
+  /**
+   * At the end of the game points happen without new hand
+   * At the beginning of the game new hand happens without points
+   * */
 
   private notif_points(
     scores: {
@@ -598,18 +605,20 @@ class IsraeliWhist extends GameGui<IsraeliWhistGamedatas> {
     }
   }
 
-  private notif_newRound(notif: { roundNumber: string }) {
-    this.updateRound(+notif.roundNumber); // todo: add round indication
+  private async notif_newHand({ cards, roundNumber }) {
+    this.updateRound(+roundNumber);
     for (const playerId in this.gamedatas.players) {
       this.updatePanelElement(playerId, "contract", html``);
       this.updatePanelElement(playerId, "tricks", html``);
     }
+
+    for (const i in cards) {
+      const card = cards[i];
+      this.handStock.addCard(card);
+    }
   }
 
-  private notif_playerContract(notif) {
-    this.updatePlayerContract(notif.player_id, notif.value);
-    this.updatePlayerTricks(notif.player_id, 0);
-  }
+  // #endregion
 
   // #endregion
 }
@@ -632,5 +641,9 @@ function isBidHigher(
 }
 
 function getSuitSortIndex(suit: number): number {
-  return [2, 1, 3, 4][suit - 1]; // todo: check if that's right
+  return [2, 1, 3, 4][suit - 1];
+}
+
+function timeout(ms: number): Promise<void> {
+  return new Promise((resolve) => setTimeout(resolve, ms));
 }
