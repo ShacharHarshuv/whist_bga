@@ -42,10 +42,6 @@ interface HighestBid {
   playerId: number | string;
 }
 
-let highestBid: HighestBid | null = null;
-let contractsSum = 0;
-let totalContracts = 0;
-
 // @ts-ignore
 GameGui = (function () {
   // this hack required so we fake extend GameGui
@@ -54,7 +50,6 @@ GameGui = (function () {
 })();
 
 class IsraeliWhist extends GameGui<IsraeliWhistGamedatas> {
-  private notifqueue: any; // see if we can type it
   private animationManager: AnimationManager;
   private cardManager: CardManager<Card>;
   private handStock: HandStock<Card>;
@@ -62,6 +57,9 @@ class IsraeliWhist extends GameGui<IsraeliWhistGamedatas> {
   private trickSuit: number | null = null;
   private tricksTaken: Record<number, number> = {};
   private voidStocks: Record<number, VoidStock<Card>> = {};
+  private highestBid: HighestBid | null = null;
+  private contractsSum = 0;
+  private totalContracts = 0;
 
   setup() {
     console.log("Setup: ", this.gamedatas);
@@ -156,7 +154,7 @@ class IsraeliWhist extends GameGui<IsraeliWhistGamedatas> {
       };
 
       const suitSelection = () => {
-        (this as any).removeActionButtons();
+        this.statusBar.removeActionButtons();
         createPassButton();
         for (const suit in suits) {
           this.statusBar.addActionButton(
@@ -170,13 +168,14 @@ class IsraeliWhist extends GameGui<IsraeliWhistGamedatas> {
       };
 
       const valueSelection = (suit: number) => {
-        (this as any).removeActionButtons();
+        this.statusBar.removeActionButtons();
         createPassButton();
         this.statusBar.addActionButton("←", () => suitSelection(), {
           color: "secondary",
         });
-        const minimumBid = highestBid
-          ? highestBid.value + (suit > highestBid.suit ? 0 : 1)
+
+        const minimumBid = this.highestBid
+          ? this.highestBid.value + (suit > this.highestBid.suit ? 0 : 1)
           : 5;
         for (let value = minimumBid; value <= 13; value++) {
           this.statusBar.addActionButton(
@@ -195,21 +194,20 @@ class IsraeliWhist extends GameGui<IsraeliWhistGamedatas> {
     };
 
     const createDeclarationButtons = () => {
-      console.log("highestBid", highestBid, this.player_id);
       const min = (() => {
-        if (highestBid && highestBid.playerId == this.player_id) {
-          return highestBid.value;
+        if (this.highestBid && this.highestBid.playerId == this.player_id) {
+          return this.highestBid.value;
         } else {
           return 0;
         }
       })();
 
       const disallowed = (() => {
-        if (totalContracts != 3) {
+        if (this.totalContracts != 3) {
           return null;
         }
 
-        return 13 - contractsSum;
+        return 13 - this.contractsSum;
       })();
 
       const max = 13;
@@ -262,13 +260,13 @@ class IsraeliWhist extends GameGui<IsraeliWhistGamedatas> {
 
   private updateTrumpSuit(newTrumpSuit: number) {
     document.getElementById("trump-indication").innerHTML = (() => {
-      if (!+newTrumpSuit) {
+      if (!newTrumpSuit) {
         return html``;
       }
 
       return html`
         <b>👑 Trump: </b>
-        <span id="trump-indication-suit">${suits[+newTrumpSuit].emoji}</span>
+        <span id="trump-indication-suit">${suits[newTrumpSuit].emoji}</span>
       `;
     })();
   }
@@ -446,20 +444,25 @@ class IsraeliWhist extends GameGui<IsraeliWhistGamedatas> {
     };
 
     this.updatePanelElement(playerId, "bid", getBidText());
-    this.updateHighestBidState(playerId, bidValue, bidSuit);
+    this.updateHighestBidState(+playerId, bidValue, bidSuit);
   }
 
   private updateHighestBidState(
-    playerId: number | string,
+    playerId: number,
     bidValue: number,
     bidSuit: number,
   ) {
     if (
       bidValue > 0 &&
-      (!highestBid ||
-        isBidHigher(highestBid.suit, highestBid.value, bidSuit, bidValue))
+      (!this.highestBid ||
+        isBidHigher(
+          this.highestBid.suit,
+          this.highestBid.value,
+          bidSuit,
+          bidValue,
+        ))
     ) {
-      highestBid = {
+      this.highestBid = {
         value: +bidValue,
         suit: +bidSuit,
         playerId,
@@ -473,8 +476,8 @@ class IsraeliWhist extends GameGui<IsraeliWhistGamedatas> {
       this.updatePanelElement(playerId, "contract", html``);
       return;
     }
-    contractsSum += +value;
-    totalContracts++;
+    this.contractsSum += +value;
+    this.totalContracts++;
     this.updatePanelElement(
       playerId,
       "contract",
@@ -606,6 +609,7 @@ class IsraeliWhist extends GameGui<IsraeliWhistGamedatas> {
   }
 
   private async notif_newHand({ cards, roundNumber }) {
+    this.updateTrumpSuit(0);
     this.updateRound(+roundNumber);
     for (const playerId in this.gamedatas.players) {
       this.updatePanelElement(playerId, "contract", html``);
@@ -637,7 +641,7 @@ function isBidHigher(
   newBidSuit: number,
   newBidValue: number,
 ): boolean {
-  return newBidValue >= currentBidValue + (newBidSuit > currentBidSuit ? 1 : 0);
+  return newBidValue >= currentBidValue + (newBidSuit > currentBidSuit ? 0 : 1);
 }
 
 function getSuitSortIndex(suit: number): number {

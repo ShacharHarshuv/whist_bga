@@ -37,6 +37,8 @@ class EndHand extends \Bga\GameFramework\States\GameState
 
     function onEnteringState()
     {
+        $this->game->setGameStateValue("trumpSuit", 0);
+
         // Calculate scores for each player
         $players = $this->game->loadPlayersBasicInfos();
         $playerScores = [];

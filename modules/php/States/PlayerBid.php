@@ -135,5 +135,5 @@ function isBidHigher(
     $newBidValue
 ) {
     return $newBidValue >=
-        $currentBidValue + ($newBidSuit > $currentBidSuit ? 1 : 0);
+        $currentBidValue + ($newBidSuit > $currentBidSuit ? 0 : 1);
 }
