@@ -99,8 +99,10 @@ class IsraeliWhist extends GameGui<IsraeliWhistGamedatas> {
           +player.bid_value,
           +player.bid_suit,
         );
-        this.updatePlayerContract(+playerId, +player.contract);
-        this.updatePlayerTricks(+playerId, +player.taken);
+        this.updateContract(+playerId, +player.contract);
+        if (this.gamedatas.gamestate.name != "PlayerDeclaration") {
+          this.updateTricks(+playerId, +player.taken);
+        }
       }
     }
 
@@ -470,9 +472,9 @@ class IsraeliWhist extends GameGui<IsraeliWhistGamedatas> {
     }
   }
 
-  private updatePlayerContract(playerId: number, value: number) {
+  private updateContract(playerId: number, value: number) {
     console.log("updatePlayerContract", playerId, value);
-    if (+value < 0) {
+    if (value < 0) {
       this.updatePanelElement(playerId, "contract", html``);
       return;
     }
@@ -485,7 +487,7 @@ class IsraeliWhist extends GameGui<IsraeliWhistGamedatas> {
     );
   }
 
-  private updatePlayerTricks(playerId: number, value: number) {
+  private updateTricks(playerId: number, value: number) {
     this.updatePanelElement(playerId, "tricks", html`<b>Tricks:</b> ${value}`);
     this.tricksTaken[+playerId] = +value;
   }
@@ -554,8 +556,8 @@ class IsraeliWhist extends GameGui<IsraeliWhistGamedatas> {
   // #region Contract Round
 
   private notif_playerContract(notif) {
-    this.updatePlayerContract(notif.player_id, notif.value);
-    this.updatePlayerTricks(notif.player_id, 0);
+    this.updateContract(notif.player_id, notif.value);
+    this.updateTricks(notif.player_id, 0);
   }
 
   // #endregion
@@ -577,10 +579,7 @@ class IsraeliWhist extends GameGui<IsraeliWhistGamedatas> {
 
   private async notif_trickWin(notif: { player_id: string }) {
     this.trickSuit = null;
-    this.updatePlayerTricks(
-      +notif.player_id,
-      ++this.tricksTaken[notif.player_id],
-    );
+    this.updateTricks(+notif.player_id, ++this.tricksTaken[notif.player_id]);
     const cardsToCollect = Object.values(this.tableStocks).flatMap((stock) =>
       stock.getCards(),
     );
