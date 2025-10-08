@@ -78,9 +78,6 @@ class PlayerBid extends \Bga\GameFramework\States\GameState
     #[PossibleAction]
     public function actBid(int $value, int $suit, int $activePlayerId)
     {
-        // throw new \BgaUserException(
-        //     "Not implemented: bid, {$value}, {$suit}, {$activePlayerId}"
-        // );
         $currentBidValue = $this->game->getGameStateValue("currentBidValue");
         $currentBidSuit = $this->game->getGameStateValue("currentBidSuit");
 

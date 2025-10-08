@@ -64,7 +64,7 @@ class IsraeliWhist extends GameGui<IsraeliWhistGamedatas> {
   setup() {
     console.log("Setup: ", this.gamedatas);
     this.createTrumpIndication();
-    this.updateTrumpSuit(this.gamedatas.trump);
+    this.updateTrumpSuit(+this.gamedatas.trump);
 
     this.createRoundIndication();
     this.updateRound(+this.gamedatas.roundNumber);
@@ -95,7 +95,7 @@ class IsraeliWhist extends GameGui<IsraeliWhistGamedatas> {
       for (const playerId in this.gamedatas.players) {
         const player = this.gamedatas.players[playerId];
         this.updateHighestBidState(
-          playerId,
+          +playerId,
           +player.bid_value,
           +player.bid_suit,
         );

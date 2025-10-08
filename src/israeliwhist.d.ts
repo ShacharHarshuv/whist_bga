@@ -35,9 +35,9 @@ interface IsraeliWhistGamedatas extends Gamedatas<IsraeliWhistPlayer> {
   cards: { [cardId: number]: Card };
   hand: Card[];
   cardsontable: ServerCard[];
-  trump: number;
-  round: number;
-  max_rounds: number;
+  trump: string;
+  round: string;
+  max_rounds: string;
   bids: { [playerId: number]: number };
   tricks: { [playerId: number]: number };
   trickSuit: string;
