@@ -24,39 +24,42 @@ class NextBidder extends \Bga\GameFramework\States\GameState
         );
         $this->game->dump("num_passes_from_db:", $passes);
 
-        if ($passes == 3) {
-            $suit = $this->game->getGameStateValue("currentBidSuit");
-            $this->game->setGameStateValue("trumpSuit", $suit);
-            // Bid Won
-            $this->game->notify->all(
-                "bidWon",
-                clienttranslate(
-                    '${player_name} won the bid with ${bid_displayed}'
-                ),
-                // todo: format this
-                [
-                    "player_name" => $this->game->getActivePlayerName(),
-                    "value_displayed" => $this->game->getGameStateValue(
-                        "currentBidValue"
-                    ),
-                    "bid_displayed" => $this->game->formatBid(
-                        (int) $this->game->getGameStateValue("currentBidValue"),
-                        (int) $this->game->getGameStateValue("currentBidSuit")
-                    ),
-                    "suit" => $suit,
-                ]
-            );
+        $suit = $this->game->getGameStateValue("currentBidSuit");
 
-            $this->game->gamestate->changeActivePlayer(
-                $this->game->getGameStateValue("currentBidPlayerId")
-            );
-            return PlayerDeclaration::class;
-        } else {
+        if ($passes < 3 || ($passes === 3 && !$suit)) {
             $nextPlayerId = $this->game->activeNextPlayer();
             while ($bids[$nextPlayerId]["bid_value"] == -2) {
                 $nextPlayerId = $this->game->activeNextPlayer();
             }
             return PlayerBid::class;
         }
+
+        if ($passes === 4) {
+            return NewHand::class; // TODO: implement Frisch
+        }
+
+        $this->game->setGameStateValue("trumpSuit", $suit);
+        // Bid Won
+        $this->game->notify->all(
+            "bidWon",
+            clienttranslate('${player_name} won the bid with ${bid_displayed}'),
+            // todo: format this
+            [
+                "player_name" => $this->game->getActivePlayerName(),
+                "value_displayed" => $this->game->getGameStateValue(
+                    "currentBidValue"
+                ),
+                "bid_displayed" => $this->game->formatBid(
+                    (int) $this->game->getGameStateValue("currentBidValue"),
+                    (int) $this->game->getGameStateValue("currentBidSuit")
+                ),
+                "suit" => $suit,
+            ]
+        );
+
+        $this->game->gamestate->changeActivePlayer(
+            $this->game->getGameStateValue("currentBidPlayerId")
+        );
+        return PlayerDeclaration::class;
     }
 }

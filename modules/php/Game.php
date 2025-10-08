@@ -254,7 +254,7 @@ class Game extends \Bga\GameFramework\Table
 
     function formatBid(int $value, int $suit): string
     {
-        return $this->values_label[$value] . $this->suits[$suit]["emoji"];
+        return $value . $this->suits[$suit]["emoji"];
     }
 
     //////////////////////////////////////////////////////////////////////////////

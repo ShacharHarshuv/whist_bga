@@ -608,11 +608,14 @@ class IsraeliWhist extends GameGui<IsraeliWhistGamedatas> {
   }
 
   private async notif_newHand({ cards, roundNumber }) {
+    this.handStock.removeAll();
+
     this.updateTrumpSuit(0);
     this.updateRound(+roundNumber);
     for (const playerId in this.gamedatas.players) {
       this.updatePanelElement(playerId, "contract", html``);
       this.updatePanelElement(playerId, "tricks", html``);
+      this.updatePanelElement(playerId, "bid", html``); // in case the new hand is a result of 4 passes
     }
 
     for (const i in cards) {
