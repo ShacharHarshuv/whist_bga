@@ -35,7 +35,7 @@ class NextBidder extends \Bga\GameFramework\States\GameState
         }
 
         if ($passes === 4) {
-            return NewHand::class; // TODO: implement Frisch
+            return GiveCards::class; // Frisch - all players pass, exchange cards
         }
 
         $this->game->setGameStateValue("trumpSuit", $suit);

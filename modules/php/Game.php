@@ -257,14 +257,31 @@ class Game extends \Bga\GameFramework\Table
         return $value . $this->suits[$suit]["emoji"];
     }
 
+    function getPlayerToGiveCards($player_id, $to_give) {
+        // pass right
+        return $to_give ? $this->getPlayerBefore($player_id) : $this->getPlayerAfter($player_id);
+    }
+
+    function getPassDirectionName(): string {
+        // Return the name of pass direction
+        return clienttranslate("The player on your right");
+    }
+
+    function sortCards($a, $b) {
+        // Sort cards by suit first (matching client-side order), then by value
+        // Client-side order: Diamonds(2), Clubs(1), Hearts(3), Spades(4)
+        $suit_order = [2 => 1, 1 => 2, 3 => 3, 4 => 4]; // suit => sort_index
+        
+        if ($a['type'] == $b['type']) {
+            return $a['type_arg'] - $b['type_arg'];
+        }
+        return $suit_order[$a['type']] - $suit_order[$b['type']];
+    }
+
     //////////////////////////////////////////////////////////////////////////////
     //////////// Game state arguments
     ////////////
 
-    function argGiveCards()
-    {
-        return [];
-    }
 
     //////////////////////////////////////////////////////////////////////////////
     //////////// Utility functions
