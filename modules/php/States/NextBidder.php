@@ -6,6 +6,7 @@ namespace Bga\Games\israeliwhist\States;
 
 use Bga\GameFramework\StateType;
 use Bga\Games\israeliwhist\Game;
+use Bga\Games\israeliwhist\States\GiveCards;
 
 class NextBidder extends \Bga\GameFramework\States\GameState
 {
@@ -38,6 +39,7 @@ class NextBidder extends \Bga\GameFramework\States\GameState
             return GiveCards::class; // Frisch - all players pass, exchange cards
         }
 
+        // Only execute this code if passes < 4
         $this->game->setGameStateValue("trumpSuit", $suit);
         // Bid Won
         $this->game->notify->all(

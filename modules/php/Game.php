@@ -261,6 +261,11 @@ class Game extends \Bga\GameFramework\Table
         return $value . $this->suits[$suit]["emoji"];
     }
 
+    function formatCard(int|string $value, int|string $suit): string
+    {
+        return $this->values_label[(int)$value] . $this->suits[(int)$suit]["emoji"];
+    }
+
     function getPlayerToGiveCards($player_id, $to_give) {
         // pass right
         return $to_give ? $this->getPlayerBefore($player_id) : $this->getPlayerAfter($player_id);

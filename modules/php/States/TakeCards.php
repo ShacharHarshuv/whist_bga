@@ -36,7 +36,7 @@ class TakeCards extends \Bga\GameFramework\States\GameState
             }
 
             // Check cards in the "temporary" location which reserves cards to be passed
-            $cards = $this->game->cards->getCardsInLocation("temporary", $player_id);
+            $cards = $this->game->deck->getCardsInLocation("temporary", $player_id);
             if (!$cards) {
                 // The other player didn't pass any cards, probably a zombie player
                 // Randomly select 3 cards in hand and pass them
@@ -46,7 +46,7 @@ class TakeCards extends \Bga\GameFramework\States\GameState
                 );
                 shuffle($card_ids);
                 $selected_card_ids = array_slice($card_ids, 0, 3);
-                $this->game->cards->moveCards($selected_card_ids, "temporary", $player_id);
+                $this->game->deck->moveCards($selected_card_ids, "temporary", $player_id);
             }
         }
 
@@ -56,30 +56,29 @@ class TakeCards extends \Bga\GameFramework\States\GameState
             $card_giver = $this->game->getPlayerToGiveCards($player_id, false);
 
             // Each player takes cards in the "temporary" location and place it in their hand
-            $cards = $this->game->cards->getCardsInLocation("temporary", $player_id);
-            $this->game->cards->moveAllCardsInLocation("temporary", "hand", $player_id, $player_id);
+            $cards = $this->game->deck->getCardsInLocation("temporary", $player_id);
+            $this->game->deck->moveAllCardsInLocation("temporary", "hand", $player_id, $player_id);
 
             // Create received card list
             $card_list = [];
             usort($cards, [$this->game, "sortCards"]);
             foreach ($cards as $card) {
-                $card_list[] = $this->game->colors[$card['type']]['name'] . 
-                              $this->game->values_label[$card['type_arg']];
+                $card_list[] = $this->game->formatCard($card['type_arg'], $card['type']);
             }
 
             $this->game->notify->player(
-                $player_id,
+                (int)$player_id,
                 "takeCards",
                 clienttranslate('You received ${card_list} from ${player_name}'),
                 [
-                    'player_name' => $this->game->getPlayerNameById($card_giver),
-                    'cards' => $cards,
-                    'card_list' => implode(', ', $card_list),
+                    "player_name" => $this->game->getPlayerNameById($card_giver),
+                    "cards" => $cards,
+                    "card_list" => implode(', ', $card_list),
                 ]
             );
 
             // Give extra time to each player
-            $this->game->giveExtraTime($player_id);
+            $this->game->giveExtraTime((int)$player_id);
         }
 
         return PlayerBid::class;

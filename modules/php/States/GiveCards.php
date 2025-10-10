@@ -6,6 +6,7 @@ namespace Bga\Games\israeliwhist\States;
 use Bga\GameFramework\StateType;
 use Bga\Games\israeliwhist\Game;
 use Bga\GameFramework\States\PossibleAction;
+use Bga\Games\israeliwhist\States\TakeCards;
 
 class GiveCards extends \Bga\GameFramework\States\GameState
 {
@@ -14,7 +15,7 @@ class GiveCards extends \Bga\GameFramework\States\GameState
         parent::__construct(
             $game,
             id: 24,
-            type: StateType::MULTIPLEACTIVEPLAYER,
+            type: StateType::MULTIPLE_ACTIVE_PLAYER,
             description: clienttranslate('All players must choose 3 cards to give to ${direction}'),
             descriptionMyTurn: clienttranslate('${you} must choose 3 cards to give to ${direction}')
         );
@@ -29,34 +30,33 @@ class GiveCards extends \Bga\GameFramework\States\GameState
         ];
     }
 
-    function onEnteringState(): string
+    function onEnteringState(): void
     {
+        // Reset all passes (bid_value = -2) to 0 for the next round of bidding
+        $this->game->DbQuery("UPDATE player SET bid_value = 0, bid_suit = 0");
+        
         // Make all players active for card giving
         $this->game->gamestate->setAllPlayersMultiactive();
-        
-        // This state waits for all players to give cards
-        // Transition happens when all players complete the action
-        return TakeCards::class;
     }
 
     #[PossibleAction]
-    public function actGiveCards(string $card_ids, int $activePlayerId)
+    public function actGiveCards(string $card_ids, int $currentPlayerId)
     {
         // Parse card IDs
-        $card_ids = rtrim($card_ids, ';'); // Remove trailing semicolon if present
+        $card_ids = rtrim($card_ids, ';');
         $card_ids_array = $card_ids ? explode(';', $card_ids) : [];
-        $card_ids_array = array_unique($card_ids_array); // Remove duplicates
+        $card_ids_array = array_unique($card_ids_array);
 
         if (count($card_ids_array) != 3) {
             throw new \BgaVisibleSystemException(
-                $this->game->_("You must give exactly 3 cards")
+                "You must give exactly 3 cards"
             );
         }
 
-        $player_to_give_cards = $this->game->getPlayerToGiveCards($activePlayerId, true);
+        $player_to_give_cards = $this->game->getPlayerToGiveCards($currentPlayerId, true);
         if (!$player_to_give_cards) {
             throw new \BgaVisibleSystemException(
-                $this->game->_("Error while determining who to give the cards")
+                "Error while determining who to give the cards"
             );
         }
 
@@ -67,18 +67,17 @@ class GiveCards extends \Bga\GameFramework\States\GameState
         
         if (count($cards) != 3) {
             throw new \BgaVisibleSystemException(
-                $this->game->_("Some of these cards don't exist")
+                "Some of these cards don't exist"
             );
         }
 
         foreach ($cards as $card) {
-            if ($card['location'] != 'hand' || $card['location_arg'] != $activePlayerId) {
+            if ($card['location'] != 'hand' || $card['location_arg'] != $currentPlayerId) {
                 throw new \BgaVisibleSystemException(
-                    $this->game->_("Some of these cards are not in your hand")
+                    "Some of these cards are not in your hand"
                 );
             }
-            $card_list[] = $this->game->suits[$card['type']]['name'] . 
-                          $this->game->values_label[$card['type_arg']];
+            $card_list[] = $this->game->formatCard($card['type_arg'], $card['type']);
         }
 
         // Move cards to temporary location
@@ -86,18 +85,18 @@ class GiveCards extends \Bga\GameFramework\States\GameState
 
         // Notify the player
         $this->game->notify->player(
-            $activePlayerId,
+            $currentPlayerId,
             "giveCards",
             clienttranslate('You passed ${card_list} to ${player_name}'),
             [
-                'player_name' => $this->game->getPlayerNameById($player_to_give_cards),
-                'cards' => $card_ids_array,
-                'card_list' => implode(', ', $card_list),
+                "player_name" => $this->game->getPlayerNameById($player_to_give_cards),
+                "cards" => $card_ids_array,
+                "card_list" => implode(', ', $card_list),
             ]
         );
 
-        // Make this player inactive
-        $this->game->gamestate->setPlayerNonMultiactive($activePlayerId, '');
+        // Make this player inactive and transition when all players are done
+        $this->game->gamestate->setPlayerNonMultiactive($currentPlayerId, TakeCards::class);
     }
 
     public function zombie(int $playerId)
