@@ -1,5 +1,4 @@
-/* Tables */
-.playertablecard {
+Tables .playertablecard {
   display: inline-block;
   position: relative;
   margin-top: 5px;
@@ -22,12 +21,16 @@
 
 .playertablename {
   font-weight: bold;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
 }
 
 .playertable {
   position: absolute;
   text-align: center;
-  width: 180px;
+  min-width: 180px;
   height: 130px;
 }
 
@@ -96,4 +99,35 @@
 #round-indication {
   max-width: 43rem;
   margin: 0 auto;
+}
+
+.trick-indication {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background-color: rgb(42, 42, 175);
+  transition: background-color 0.3s ease;
+  /* display: inline-block;
+  border-radius: 1px;
+  box-shadow: 1px 1px 3px #00000029;
+  width: 23px;
+  height: 30px;
+  background-image: url("img/tricks-indication.png"); */
+}
+
+.trick-indication.missing {
+  opacity: 0.3;
+}
+
+.trick-indication.extra {
+  background-color: rgb(250, 29, 29);
+}
+
+.trick-indication.good {
+  background-color: green;
+}
+
+.playertable-info {
+  display: flex;
+  gap: 3px;
 }
