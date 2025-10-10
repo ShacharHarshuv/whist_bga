@@ -36,6 +36,12 @@ class NextBidder extends \Bga\GameFramework\States\GameState
         }
 
         if ($passes === 4) {
+            $frischCounter = $this->game->getGameStateValue("frischCounter");
+            if ($frischCounter >= 3) {
+                // Maximum 3 card exchanges reached, start new hand
+                return NewHand::class;
+            }
+            
             return GiveCards::class; // Frisch - all players pass, exchange cards
         }
 

@@ -42,6 +42,7 @@ class Game extends \Bga\GameFramework\Table
             // Do we need those two? It seems like it would be derived from the state of the contracts, and doesn't need to be separate
             "contractsSum" => 18,
             "numberOfContracts" => 19,
+            "frischCounter" => 20,
         ]);
 
         // Initialize suits and values

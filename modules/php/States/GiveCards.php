@@ -32,6 +32,18 @@ class GiveCards extends \Bga\GameFramework\States\GameState
 
     function onEnteringState(): void
     {
+        // Increment the Frisch counter
+        $currentCounter = $this->game->getGameStateValue("frischCounter");
+        $newCounter = $currentCounter + 1;
+        $this->game->setGameStateValue("frischCounter", $newCounter);
+        
+        // Notify all players that Frisch happened
+        $this->game->notify->all(
+            "frisch",
+            clienttranslate('Frisch! All players passed - exchanging cards'),
+            []
+        );
+        
         // Reset all passes (bid_value = -2) to 0 for the next round of bidding
         $this->game->DbQuery("UPDATE player SET bid_value = 0, bid_suit = 0");
         
