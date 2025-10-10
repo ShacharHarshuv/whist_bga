@@ -20,7 +20,7 @@ class EndHand extends \Bga\GameFramework\States\GameState
             if ($contract == 0) {
                 $contractsSum = $this->game->getGameStateValue("contractsSum");
                 $isOver = $contractsSum > 13;
-                return $isOver ? 25 : 50;
+                return $isOver ? $this->game->tableOptions->get(101) : 50;
             }
 
             return $taken * $taken + 10;
@@ -32,7 +32,8 @@ class EndHand extends \Bga\GameFramework\States\GameState
             return -50 + ($diff - 1) * 10;
         }
 
-        return -10 * $diff;
+        $penalty = $this->game->tableOptions->get(102);
+        return -10 * $penalty;
     }
 
     function onEnteringState()
@@ -79,7 +80,7 @@ class EndHand extends \Bga\GameFramework\States\GameState
 
         // Check if game should end (after certain number of rounds)
         $round = $this->game->getGameStateValue("roundNumber");
-        $numberOfRounds = $this->game->numberOfRounds;
+        $numberOfRounds = $this->game->getNumberOfRounds();
         if ($round >= $numberOfRounds) {
             // Game ends after 13 rounds
             return 99; // todo: check this actually ends the game

@@ -290,7 +290,7 @@ class IsraeliWhist extends GameGui<IsraeliWhistGamedatas> {
   }
 
   private createRoundIndication() {
-    const totalRounds = this.gamedatas.numberOfRounds; // todo: figure out where this number should come from
+    const totalRounds = this.gamedatas.numberOfRounds;
     // TODO: consider a fancier progress bar
     this.getGameAreaElement().insertAdjacentHTML(
       "beforeend",

@@ -1,1 +1,55 @@
-{}
+{
+  "100": {
+    "name": "Number of rounds",
+    "values": {
+      "13": {
+        "name": "13 rounds",
+        "description": "Standard game with 13 rounds",
+        "tmdisplay": ""
+      },
+      "10": {
+        "name": "10 rounds",
+        "description": "Shorter game with 10 rounds",
+        "tmdisplay": "10 rounds"
+      },
+      "5": {
+        "name": "5 rounds",
+        "description": "Super short game with 5 rounds",
+        "tmdisplay": "5 rounds"
+      }
+    },
+    "default": 13
+  },
+  "101": {
+    "name": "Zero scoring in over",
+    "values": {
+      "25": {
+        "name": "25 points",
+        "description": "Zero contract scores 25 points when over",
+        "tmdisplay": ""
+      },
+      "30": {
+        "name": "30 points",
+        "description": "Zero contract scores 30 points when over",
+        "tmdisplay": "30 points when over"
+      }
+    },
+    "default": 25
+  },
+  "102": {
+    "name": "Penalty",
+    "values": {
+      "10": {
+        "name": "-10 per trick",
+        "description": "Penalty of 10 points per trick difference when not making contract",
+        "tmdisplay": ""
+      },
+      "5": {
+        "name": "-5 per trick",
+        "description": "Penalty of 5 points per trick difference when not making contract",
+        "tmdisplay": "-5 penalty"
+      }
+    },
+    "default": 10
+  }
+}
