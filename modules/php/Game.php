@@ -22,7 +22,11 @@ class Game extends \Bga\GameFramework\Table
     public $suits; // For each suit number (1-4) what is the label (spade, heart, diamond, club)
     public $values_label; // For each card value (2-14) what is the label (2, ..., 10, J, Q, K, A)
     public $deck;
-    public $numberOfRounds = 13; // TODO: allow to customize via settings
+
+    public function getNumberOfRounds(): int
+    {
+        return $this->tableOptions->get(100);
+    }
 
     function __construct()
     {
@@ -237,7 +241,7 @@ class Game extends \Bga\GameFramework\Table
         // }
 
         $result["trickSuit"] = $this->getGameStateValue("trickSuit");
-        $result["numberOfRounds"] = $this->numberOfRounds;
+        $result["numberOfRounds"] = $this->tableOptions->get(100);
 
         return $result;
     }
@@ -245,7 +249,7 @@ class Game extends \Bga\GameFramework\Table
     function getGameProgression(): int
     {
         $round = $this->getGameStateValue("roundNumber");
-        return (int) round(($round / $this->numberOfRounds) * 100);
+        return (int) round(($round / $this->getNumberOfRounds()) * 100);
     }
 
     //////////////////////////////////////////////////////////////////////////////
