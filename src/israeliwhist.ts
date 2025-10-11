@@ -360,7 +360,7 @@ class IsraeliWhist extends GameGui<IsraeliWhistGamedatas> {
     const selectedCards = this.handStock.getSelection();
     
     if (selectedCards.length !== 3) {
-      (this as any).showMessage(_("You must select exactly 3 cards"), "error");
+      this.showMessage(_("You must select exactly 3 cards"), "error");
       return;
     }
 
