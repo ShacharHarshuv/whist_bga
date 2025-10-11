@@ -28,7 +28,7 @@ class TakeCards extends \Bga\GameFramework\States\GameState
         // First pass: ensure all players have cards in temporary location
         foreach ($player_list as $player_id) {
             // Check the card pass direction and track the card giver
-            $card_giver = $this->game->getPlayerToGiveCards($player_id, false);
+            $card_giver = $this->game->getPlayerToGiveCards($player_id);
             if (!$card_giver) {
                 throw new \BgaVisibleSystemException(
                     $this->game->_("Error while determining who to give the cards")
@@ -53,7 +53,7 @@ class TakeCards extends \Bga\GameFramework\States\GameState
         // Second pass: move cards from temporary to hand and notify
         foreach ($player_list as $player_id) {
             // Check the card pass direction and track the card giver
-            $card_giver = $this->game->getPlayerToGiveCards($player_id, false);
+            $card_giver = $this->game->getPlayerToGiveCards($player_id);
 
             // Each player takes cards in the "temporary" location and place it in their hand
             $cards = $this->game->deck->getCardsInLocation("temporary", $player_id);

@@ -16,18 +16,9 @@ class GiveCards extends \Bga\GameFramework\States\GameState
             $game,
             id: 24,
             type: StateType::MULTIPLE_ACTIVE_PLAYER,
-            description: clienttranslate('All players must choose 3 cards to give to ${direction}'),
-            descriptionMyTurn: clienttranslate('${you} must choose 3 cards to give to ${direction}')
+            description: clienttranslate('All players must choose 3 cards to give to the player on their right'),
+            descriptionMyTurn: clienttranslate('${you} must choose 3 cards to give to the player on their right')
         );
-    }
-
-    function getArgs(): array
-    {
-        // Send the translatable name of pass direction
-        return [
-            "i18n" => ['direction'],
-            "direction" => $this->game->getPassDirectionName(),
-        ];
     }
 
     function onEnteringState(): void
@@ -65,7 +56,7 @@ class GiveCards extends \Bga\GameFramework\States\GameState
             );
         }
 
-        $player_to_give_cards = $this->game->getPlayerToGiveCards($currentPlayerId, true);
+        $player_to_give_cards = $this->game->getPlayerToGiveCards($currentPlayerId);
         if (!$player_to_give_cards) {
             throw new \BgaVisibleSystemException(
                 "Error while determining who to give the cards"
@@ -76,7 +67,6 @@ class GiveCards extends \Bga\GameFramework\States\GameState
         $cards = $this->game->deck->getCards($card_ids_array);
         $card_list = [];
         usort($cards, [$this->game, "sortCards"]);
-        
         if (count($cards) != 3) {
             throw new \BgaVisibleSystemException(
                 "Invalid card Ids"

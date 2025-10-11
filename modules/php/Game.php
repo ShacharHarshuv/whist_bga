@@ -267,14 +267,9 @@ class Game extends \Bga\GameFramework\Table
         return $this->values_label[(int)$value] . $this->suits[(int)$suit]["emoji"];
     }
 
-    function getPlayerToGiveCards($player_id, $to_give) {
-        // pass right
-        return $to_give ? $this->getPlayerBefore($player_id) : $this->getPlayerAfter($player_id);
-    }
-
-    function getPassDirectionName(): string {
-        // Return the name of pass direction
-        return clienttranslate("The player on your right");
+    function getPlayerToGiveCards($player_id) {
+        // pass to the player before
+        return $this->getPlayerBefore($player_id);
     }
 
     function sortCards($a, $b) {

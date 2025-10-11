@@ -656,13 +656,13 @@ class IsraeliWhist extends GameGui<IsraeliWhistGamedatas> {
   }
 
   private async notif_giveCards(notif: { cards: number[] }) {
-  // Remove cards from hand that were given away
-  for (const cardId of notif.cards) {
-    const card = this.handStock.getCards().find(c => c.id === cardId);
-    if (card) {
-      await this.handStock.removeCard(card);
+    // Remove cards from hand that were given away
+    for (const cardId of notif.cards) {
+      const card = this.handStock.getCards().find(c => c.id === cardId);
+      if (card) {
+        await this.handStock.removeCard(card);
+      }
     }
-  }
 }
 
 private async notif_takeCards(notif: { cards: Card[] }) {
