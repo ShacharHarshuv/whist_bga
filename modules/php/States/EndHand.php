@@ -33,7 +33,7 @@ class EndHand extends \Bga\GameFramework\States\GameState
         }
 
         $penalty = $this->game->tableOptions->get(102);
-        return -10 * $penalty;
+        return -1 * $penalty * $diff;
     }
 
     function onEnteringState()
