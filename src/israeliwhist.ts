@@ -55,7 +55,13 @@ class IsraeliWhist extends GameGui<IsraeliWhistGamedatas> {
   private handStock: HandStock<Card>;
   private tableStocks: Record<number, LineStock<Card>> = {};
   private trickSuit: number | null = null;
-  private tricksTaken: Record<number, number> = {};
+  private tricksState: Record<
+    number,
+    {
+      tricks: number;
+      contract: number;
+    }
+  > = {};
   private voidStocks: Record<number, VoidStock<Card>> = {};
   private highestBid: HighestBid | null = null;
   private contractsSum = 0;
@@ -86,6 +92,12 @@ class IsraeliWhist extends GameGui<IsraeliWhistGamedatas> {
     this.createPlayersPanels();
     this.createVoidStocks();
 
+    for (const playerId in this.gamedatas.players) {
+      this.tricksState[+playerId] = {
+        tricks: 0,
+        contract: 0,
+      };
+    }
     if (this.gamedatas.gamestate.name == "PlayerBid") {
       for (const playerId in this.gamedatas.players) {
         const player = this.gamedatas.players[playerId];
@@ -314,6 +326,10 @@ class IsraeliWhist extends GameGui<IsraeliWhistGamedatas> {
           >
             <div class="playertablename" style="color:#${player.color};">
               ${player.name}
+              <span
+                id="playertable_${player.id}_info"
+                class="playertable-info"
+              ></span>
             </div>
             <div
               class="playertablecard"
@@ -339,6 +355,11 @@ class IsraeliWhist extends GameGui<IsraeliWhistGamedatas> {
       },
       {},
     );
+  }
+
+  private updatePlayerTableInfo(playerId: number, info: string) {
+    console.log("updatePlayerTableInfo", playerId, info);
+    document.getElementById(`playertable_${playerId}_info`).innerHTML = info;
   }
 
   private createCardsManager() {
@@ -426,7 +447,7 @@ class IsraeliWhist extends GameGui<IsraeliWhistGamedatas> {
     for (const playerId in players) {
       this.voidStocks[+playerId] = new BgaCards.VoidStock(
         this.cardManager,
-        document.querySelector(`#player_panel_${playerId} #tricks`),
+        document.querySelector(`#playertablecard_${playerId}`),
       );
     }
   }
@@ -477,8 +498,11 @@ class IsraeliWhist extends GameGui<IsraeliWhistGamedatas> {
     console.log("updatePlayerContract", playerId, value);
     if (value < 0) {
       this.updatePanelElement(playerId, "contract", html``);
+      this.updatePlayerTableInfo(playerId, "");
       return;
     }
+    const tricksState = this.tricksState[+playerId];
+    tricksState.contract = +value;
     this.contractsSum += +value;
     this.totalContracts++;
     this.updatePanelElement(
@@ -486,11 +510,36 @@ class IsraeliWhist extends GameGui<IsraeliWhistGamedatas> {
       "contract",
       html`<b>Contract:</b> ${value}`,
     );
+    this.updatePlayerTableInfo(
+      playerId,
+      this.buildTricksIndicationHtml(tricksState.contract, tricksState.tricks),
+    );
   }
 
   private updateTricks(playerId: number, value: number) {
     this.updatePanelElement(playerId, "tricks", html`<b>Tricks:</b> ${value}`);
-    this.tricksTaken[+playerId] = +value;
+    const tricksState = this.tricksState[+playerId];
+    tricksState.tricks = +value;
+
+    this.updatePlayerTableInfo(
+      playerId,
+      this.buildTricksIndicationHtml(tricksState.contract, value),
+    );
+  }
+
+  private buildTricksIndicationHtml(contract: number, tricks: number) {
+    const isGood = tricks == contract;
+    let str = "";
+    for (let i = 0; i < Math.min(tricks, contract); i++) {
+      str += `<span class="trick-indication ${isGood ? "good" : ""}"></span>`;
+    }
+    for (let i = tricks; i < contract; i++) {
+      str += '<span class="trick-indication missing"></span>';
+    }
+    for (let i = contract; i < tricks; i++) {
+      str += '<span class="trick-indication extra"></span>';
+    }
+    return str;
   }
 
   private updatePanelElement(
@@ -580,7 +629,7 @@ class IsraeliWhist extends GameGui<IsraeliWhistGamedatas> {
 
   private async notif_trickWin(notif: { player_id: string }) {
     this.trickSuit = null;
-    this.updateTricks(+notif.player_id, ++this.tricksTaken[notif.player_id]);
+    this.updateTricks(+notif.player_id, ++this.tricksState[notif.player_id]);
     const cardsToCollect = Object.values(this.tableStocks).flatMap((stock) =>
       stock.getCards(),
     );
