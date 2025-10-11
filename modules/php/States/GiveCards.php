@@ -35,7 +35,7 @@ class GiveCards extends \Bga\GameFramework\States\GameState
             []
         );
         
-        // Reset all passes (bid_value = -2) to 0 for the next round of bidding
+        // Reset all passes (bid_value = PASS) to 0 for the next round of bidding
         $this->game->DbQuery("UPDATE player SET bid_value = 0, bid_suit = 0");
         
         // Make all players active for card giving
