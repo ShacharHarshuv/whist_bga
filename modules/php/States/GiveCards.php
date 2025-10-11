@@ -79,7 +79,7 @@ class GiveCards extends \Bga\GameFramework\States\GameState
         
         if (count($cards) != 3) {
             throw new \BgaVisibleSystemException(
-                "Some of these cards don't exist"
+                "Invalid card Ids"
             );
         }
 
