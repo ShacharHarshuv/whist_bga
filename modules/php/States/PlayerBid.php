@@ -81,10 +81,13 @@ class PlayerBid extends \Bga\GameFramework\States\GameState
         $currentBidValue = $this->game->getGameStateValue("currentBidValue");
         $currentBidSuit = $this->game->getGameStateValue("currentBidSuit");
 
-        // TODO: after Frisch, this would be higher
-        if ($value < 5) {
+        // Minimum bid increases by 1 for each Frisch
+        $frischCounter = $this->game->getGameStateValue("frischCounter");
+        $minBid = 5 + $frischCounter;
+        
+        if ($value < $minBid) {
             throw new \BgaVisibleSystemException(
-                clienttranslate("Bid value must be at least 5")
+                clienttranslate("Bid value must be at least ${minBid}")
             );
         }
 

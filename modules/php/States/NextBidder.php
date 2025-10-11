@@ -6,6 +6,7 @@ namespace Bga\Games\israeliwhist\States;
 
 use Bga\GameFramework\StateType;
 use Bga\Games\israeliwhist\Game;
+use Bga\Games\israeliwhist\States\GiveCards;
 
 class NextBidder extends \Bga\GameFramework\States\GameState
 {
@@ -35,9 +36,16 @@ class NextBidder extends \Bga\GameFramework\States\GameState
         }
 
         if ($passes === 4) {
-            return NewHand::class; // TODO: implement Frisch
+            $frischCounter = $this->game->getGameStateValue("frischCounter");
+            if ($frischCounter >= 3) {
+                // Maximum 3 card exchanges reached, start new hand
+                return NewHand::class;
+            }
+            
+            return GiveCards::class; // Frisch - all players pass, exchange cards
         }
 
+        // Only execute this code if passes < 4
         $this->game->setGameStateValue("trumpSuit", $suit);
         // Bid Won
         $this->game->notify->all(

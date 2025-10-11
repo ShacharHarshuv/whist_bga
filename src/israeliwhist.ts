@@ -138,6 +138,11 @@ class IsraeliWhist extends GameGui<IsraeliWhistGamedatas> {
     if (stateName == "PlayerTurn") {
       this.handStock.setSelectableCards(this.handStock.getCards());
     }
+
+    if (stateName == "GiveCards") {
+      // Reset to single selection mode
+      this.handStock.setSelectionMode("single");
+    }
   }
 
   public onUpdateActionButtons(stateName: string, args: any) {
@@ -236,6 +241,17 @@ class IsraeliWhist extends GameGui<IsraeliWhistGamedatas> {
       case "PlayerDeclaration":
         createDeclarationButtons();
         break;
+      case "GiveCards":
+      // Enable multi-selection mode for card passing
+      this.handStock.setSelectionMode("multiple");
+      this.statusBar.addActionButton(
+        _("Give selected cards"),
+        () => this.onGiveCards(),
+        {
+          color: "primary",
+        }
+      );
+      break;
     }
   }
 
@@ -339,6 +355,21 @@ class IsraeliWhist extends GameGui<IsraeliWhistGamedatas> {
       },
       {},
     );
+  }
+
+  private onGiveCards() {
+    const selectedCards = this.handStock.getSelection();
+    
+    if (selectedCards.length !== 3) {
+      this.showMessage(_("You must select exactly 3 cards"), "error");
+      return;
+    }
+
+    // Get card IDs as a semicolon-separated string
+    const cardIds = selectedCards.map(card => card.id).join(';');
+    
+    this.handStock.unselectAll();
+    this.bgaPerformAction("actGiveCards", { card_ids: cardIds });
   }
 
   private createCardsManager() {
@@ -627,6 +658,23 @@ class IsraeliWhist extends GameGui<IsraeliWhistGamedatas> {
       this.handStock.addCard(card);
     }
   }
+
+  private async notif_giveCards(notif: { cards: number[] }) {
+    // Remove cards from hand that were given away
+    for (const cardId of notif.cards) {
+      const card = this.handStock.getCards().find(c => c.id === cardId);
+      if (card) {
+        await this.handStock.removeCard(card);
+      }
+    }
+}
+
+private async notif_takeCards(notif: { cards: Card[] }) {
+  // Add received cards to hand
+  for (const card of notif.cards) {
+    await this.handStock.addCard(card);
+  }
+}
 
   // #endregion
 

@@ -42,6 +42,7 @@ class Game extends \Bga\GameFramework\Table
             // Do we need those two? It seems like it would be derived from the state of the contracts, and doesn't need to be separate
             "contractsSum" => 18,
             "numberOfContracts" => 19,
+            "frischCounter" => 20,
         ]);
 
         // Initialize suits and values
@@ -261,14 +262,31 @@ class Game extends \Bga\GameFramework\Table
         return $value . $this->suits[$suit]["emoji"];
     }
 
+    function formatCard(int|string $value, int|string $suit): string
+    {
+        return $this->values_label[(int)$value] . $this->suits[(int)$suit]["emoji"];
+    }
+
+    function getPlayerToGiveCards($player_id) {
+        // pass to the player before
+        return $this->getPlayerBefore($player_id);
+    }
+
+    function sortCards($a, $b) {
+        // Sort cards by suit first (matching client-side order), then by value
+        // Client-side order: Diamonds(2), Clubs(1), Hearts(3), Spades(4)
+        $suit_order = [2 => 1, 1 => 2, 3 => 3, 4 => 4]; // suit => sort_index
+        
+        if ($a['type'] == $b['type']) {
+            return $a['type_arg'] - $b['type_arg'];
+        }
+        return $suit_order[$a['type']] - $suit_order[$b['type']];
+    }
+
     //////////////////////////////////////////////////////////////////////////////
     //////////// Game state arguments
     ////////////
 
-    function argGiveCards()
-    {
-        return [];
-    }
 
     //////////////////////////////////////////////////////////////////////////////
     //////////// Utility functions
