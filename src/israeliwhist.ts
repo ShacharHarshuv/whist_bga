@@ -297,12 +297,13 @@ class IsraeliWhist extends GameGui<IsraeliWhistGamedatas> {
       html` <div id="player-tables"></div> `,
     );
 
-    const players = [...Object.values(this.gamedatas.players)];
-    while (+players[0].id != this.player_id) {
-      players.push(players.shift());
+    const playerorder = [...this.gamedatas.playerorder];
+    while (playerorder[0] != this.player_id) {
+      playerorder.push(playerorder.shift());
     }
 
-    players.forEach((player, index) => {
+    playerorder.forEach((playerId, index) => {
+      const player = this.gamedatas.players[playerId];
       document.getElementById("player-tables").insertAdjacentHTML(
         "beforeend",
         html`
