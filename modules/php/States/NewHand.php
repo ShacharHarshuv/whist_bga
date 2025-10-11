@@ -45,7 +45,9 @@ class NewHand extends \Bga\GameFramework\States\GameState
         $this->game->setGameStateValue("numberOfContracts", 0);
 
         // Reset all players' bid values for the new hand
-        $this->game->DbQuery("UPDATE player SET bid_value = 0, bid_suit = 0");
+        $this->game->DbQuery(
+            "UPDATE player SET bid_value = 0, bid_suit = 0, contract = -1"
+        );
 
         return PlayerBid::class;
     }
