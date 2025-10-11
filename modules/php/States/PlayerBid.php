@@ -87,10 +87,7 @@ class PlayerBid extends \Bga\GameFramework\States\GameState
         
         if ($value < $minBid) {
             throw new \BgaVisibleSystemException(
-                clienttranslate("Bid value must be at least ${min_bid}"),
-                [
-                    "min_bid" => $minBid,
-                ]
+                clienttranslate("Bid value must be at least ${minBid}")
             );
         }
 
