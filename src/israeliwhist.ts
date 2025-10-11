@@ -610,6 +610,7 @@ class IsraeliWhist extends GameGui<IsraeliWhistGamedatas> {
 
   private async notif_newHand({ cards, roundNumber }) {
     this.totalContracts = 0;
+    this.contractsSum = 0;
     this.handStock.removeAll();
     this.highestBid = null;
 
