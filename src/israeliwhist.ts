@@ -298,7 +298,6 @@ class IsraeliWhist extends GameGui<IsraeliWhistGamedatas> {
     );
 
     const playerorder = [...this.gamedatas.playerorder];
-    // const players = [...Object.values(this.gamedatas.players)];
     while (playerorder[0] != this.player_id) {
       playerorder.push(playerorder.shift());
     }
