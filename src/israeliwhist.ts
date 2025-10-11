@@ -368,7 +368,7 @@ class IsraeliWhist extends GameGui<IsraeliWhistGamedatas> {
     const cardIds = selectedCards.map(card => card.id).join(';');
     
     this.handStock.unselectAll();
-    (this as any).bgaPerformAction("actGiveCards", { card_ids: cardIds });
+    this.bgaPerformAction("actGiveCards", { card_ids: cardIds });
   }
 
   private createCardsManager() {
