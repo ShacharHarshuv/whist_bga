@@ -126,7 +126,7 @@ class PlayerBid extends \Bga\GameFramework\States\GameState
             $this->game->DbQuery("
                 UPDATE player 
                 SET bid_value = 0 
-                WHERE bid_value = " . Game::PASS . "
+                WHERE bid_value = ${Game::PASS}
             ");
         }
 
