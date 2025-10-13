@@ -21,6 +21,17 @@ class PlayerTurn extends \Bga\GameFramework\States\GameState
         );
     }
 
+    public function onEnteringState()
+    {
+        $activePlayerId = (int) $this->game->getActivePlayerId();
+        $hand = $this->game->deck->getPlayerHand($activePlayerId);
+
+        if (count($hand) === 1) {
+            $card = reset($hand);
+            return $this->actPlayCard((int) $card["id"], $activePlayerId);
+        }
+    }
+
     private function checkIsCardPlayable(int $cardId, int $playerId)
     {
         $game = $this->game;
