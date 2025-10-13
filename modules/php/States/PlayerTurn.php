@@ -17,7 +17,9 @@ class PlayerTurn extends \Bga\GameFramework\States\GameState
             id: 31,
             type: StateType::ACTIVE_PLAYER,
             description: clienttranslate('${actplayer} must play a card'),
-            descriptionMyTurn: clienttranslate('${you} must play a card')
+            descriptionMyTurn: clienttranslate(
+                '${you} must play a card or claim remaining tricks'
+            )
         );
     }
 
@@ -116,6 +118,26 @@ class PlayerTurn extends \Bga\GameFramework\States\GameState
             ]
         );
         return NextPlayer::class;
+    }
+
+    #[PossibleAction]
+    public function actClaim(int $activePlayerId)
+    {
+        $playersCards = $this->game->deck->getPlayerHand($activePlayerId);
+        $this->game->setGameStateValue("claimingPlayerId", $activePlayerId);
+        $this->notify->all(
+            "playerClaim",
+            clienttranslate(
+                '${player_name} claims ${remaining_tricks} remaining tricks'
+            ),
+            [
+                "player_id" => $activePlayerId,
+                "player_name" => $this->game->getActivePlayerName(),
+                "cards" => array_values($playersCards),
+                "remaining_tricks" => count($playersCards),
+            ]
+        );
+        return ClaimAccept::class;
     }
 
     // Plays the highest possible card
