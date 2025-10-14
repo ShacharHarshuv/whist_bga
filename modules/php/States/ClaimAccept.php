@@ -41,34 +41,35 @@ class ClaimAccept extends \Bga\GameFramework\States\GameState
     }
 
     #[PossibleAction]
-    public function actAccept(int $activePlayerId)
+    public function actAccept(int $currentPlayerId)
     {
-        $this->game->gamestate->setPlayerNonMultiactive(
-            $activePlayerId,
-            EndClaim::class /* TODO this should probably be different? */
-        );
+        $this->game->dump("actAccept", $currentPlayerId);
         $this->game->notify->all(
             "playerAccept",
             clienttranslate('${player_name} accepts'),
             [
-                "player_id" => $activePlayerId,
+                "player_id" => $currentPlayerId,
                 "player_name" => $this->game->getPlayerNameById(
-                    $activePlayerId
+                    $currentPlayerId
                 ),
             ]
+        );
+        $this->game->gamestate->setPlayerNonMultiactive(
+            $currentPlayerId,
+            EndClaim::class
         );
     }
 
     #[PossibleAction]
-    public function actContest(int $activePlayerId)
+    public function actContest(int $currentPlayerId)
     {
         $this->game->notify->all(
             "playerContest",
             clienttranslate('${player_name} contests the claim'),
             [
-                "player_id" => $activePlayerId,
+                "player_id" => $currentPlayerId,
                 "player_name" => $this->game->getPlayerNameById(
-                    $activePlayerId
+                    $currentPlayerId
                 ),
             ]
         );

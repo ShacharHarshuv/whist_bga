@@ -748,6 +748,25 @@ class IsraeliWhist extends GameGui<IsraeliWhistGamedatas> {
     await Promise.all(cardsToCollect.map((card) => voidStock.addCard(card)));
   }
 
+  private async notif_claimAccepted(notif: {
+    player_id: number;
+    player_name: string;
+    remaining_tricks: number;
+  }) {
+    const cardsToMove = [
+      ...this.handStock.getCards(),
+      ...this.claimStock.getCards(),
+    ];
+    this.updateTricks(
+      notif.player_id,
+      this.tricksTaken[notif.player_id] + notif.remaining_tricks,
+    );
+    const voidStock = this.voidStocks[notif.player_id];
+    await Promise.all(cardsToMove.map((card) => voidStock.addCard(card)));
+    this.hideClaimHand();
+    await timeout(500);
+  }
+
   // #endregion
 
   // #region end hand

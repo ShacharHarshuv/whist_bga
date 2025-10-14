@@ -17,7 +17,29 @@ class EndClaim extends \Bga\GameFramework\States\GameState
 
     function onEnteringState()
     {
-        // todo: award player remaining tricks and notify clients
+        $claimingPlayerId = (int) $this->game->getGameStateValue(
+            "claimingPlayerId"
+        );
+        $numberOfRemainingTricks = count(
+            $this->game->deck->getPlayerHand($claimingPlayerId)
+        );
+
+        $this->game->DbQuery(
+            "UPDATE player SET tricks_taken=tricks_taken+$numberOfRemainingTricks WHERE player_id='$claimingPlayerId'"
+        );
+        $this->notify->all(
+            "claimAccepted",
+            clienttranslate(
+                '${player_name} claim for ${remaining_tricks} remaining tricks accepted'
+            ),
+            [
+                "player_id" => $claimingPlayerId,
+                "player_name" => $this->game->getPlayerNameById(
+                    $claimingPlayerId
+                ),
+                "remaining_tricks" => $numberOfRemainingTricks,
+            ]
+        );
         return EndHand::class;
     }
 }
