@@ -8,7 +8,7 @@ use Bga\Games\israeliwhist\Game;
 use Bga\GameFramework\States\PossibleAction;
 use Bga\Games\israeliwhist\States\TakeCards;
 
-class ClaimAccept extends \Bga\GameFramework\States\GameState
+class ClaimReview extends \Bga\GameFramework\States\GameState
 {
     public function __construct(protected Game $game)
     {

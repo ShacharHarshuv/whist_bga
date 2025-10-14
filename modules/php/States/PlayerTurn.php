@@ -137,7 +137,7 @@ class PlayerTurn extends \Bga\GameFramework\States\GameState
                 "remaining_tricks" => count($playersCards),
             ]
         );
-        return ClaimAccept::class;
+        return ClaimReview::class;
     }
 
     // Plays the highest possible card
