@@ -57,6 +57,7 @@ class IsraeliWhist extends GameGui<IsraeliWhistGamedatas> {
   private animationManager: AnimationManager;
   private cardManager: CardManager<Card>;
   private handStock: HandStock<Card>;
+  private claimStock: LineStock<Card>;
   private tableStocks: Record<number, LineStock<Card>> = {};
   private trickSuit: number | null = null;
   private tricksTaken: Record<number, number> = {};
@@ -78,6 +79,11 @@ class IsraeliWhist extends GameGui<IsraeliWhistGamedatas> {
     this.createCardsManager();
 
     this.createTables();
+    this.createClaimHand();
+    this.showClaimHand(
+      +this.gamedatas.claimingPlayerId,
+      this.gamedatas.claimingPlayerCards,
+    );
     this.createPlayerHand();
 
     // Cards played on table
@@ -152,14 +158,15 @@ class IsraeliWhist extends GameGui<IsraeliWhistGamedatas> {
   }
 
   public onUpdateActionButtons(stateName: string, args: any) {
-    console.log("onUpdateActionButtons: " + stateName);
+    const currentTitle = document.getElementById("pagemaintitletext").innerHTML;
+    console.log("onUpdateActionButtons: " + stateName, args);
     console.log("State Name", stateName);
 
     const createPlayerBidButtons = () => {
       const createPassButton = () => {
         this.statusBar.addActionButton(
           _("Pass"),
-          () => (this as any).bgaPerformAction("actPass"),
+          () => this.bgaPerformAction("actPass"),
           {
             color: "primary",
           },
@@ -205,7 +212,7 @@ class IsraeliWhist extends GameGui<IsraeliWhistGamedatas> {
           this.statusBar.addActionButton(
             formatBid(value, suit),
             () => {
-              (this as any).bgaPerformAction("actBid", { value, suit });
+              this.bgaPerformAction("actBid", { value, suit });
             },
             {
               color: "secondary",
@@ -247,9 +254,38 @@ class IsraeliWhist extends GameGui<IsraeliWhistGamedatas> {
       }
     };
 
-    if (!(this as any).isCurrentPlayerActive()) {
+    if (!this.isCurrentPlayerActive()) {
       return;
     }
+
+    const showClaimButton = () => {
+      this.statusBar.removeActionButtons();
+      document.getElementById("pagemaintitletext").innerHTML = currentTitle;
+      this.statusBar.addActionButton(_("Claim Remaining"), () => {
+        showClaimConfirmation();
+      });
+    };
+
+    const showClaimConfirmation = () => {
+      this.statusBar.removeActionButtons();
+      this.statusBar.setTitle(
+        _(
+          "Are you sure you want to show your hand to claim the remaining tricks?",
+        ),
+      );
+      this.statusBar.addActionButton(
+        _("Cancel"),
+        () => {
+          showClaimButton();
+        },
+        {
+          color: "alert",
+        },
+      );
+      this.statusBar.addActionButton(_("Confirm"), () => {
+        this.bgaPerformAction("actClaim");
+      });
+    };
 
     switch (stateName) {
       case "PlayerBid":
@@ -268,6 +304,9 @@ class IsraeliWhist extends GameGui<IsraeliWhistGamedatas> {
             color: "primary",
           },
         );
+        break;
+      case "PlayerTurn":
+        showClaimButton();
         break;
     }
   }
@@ -415,6 +454,72 @@ class IsraeliWhist extends GameGui<IsraeliWhistGamedatas> {
       },
       isCardVisible: (card) => card.type > 0,
     });
+  }
+
+  // todo: this should be invisible by default
+  private createClaimHand() {
+    this.getGameAreaElement().insertAdjacentHTML(
+      "beforeend",
+      html`
+        <div id="claim_wrap" class="whiteblock">
+          <b id="claim_label"
+            >Player {player_name} claims the rest of the tricks with:</b
+          >
+          <div id="claimhand"></div>
+          <div id="claim_buttons">
+            <button class="bgabutton bgabutton_red" id="contest_claim">
+              ${_("Contest")}
+            </button>
+            <button class="bgabutton bgabutton_blue" id="accept_claim">
+              ${_("Accept")}
+            </button>
+          </div>
+        </div>
+      `,
+    );
+
+    document.getElementById("contest_claim").addEventListener("click", () => {
+      this.bgaPerformAction("actContest");
+    });
+    document.getElementById("accept_claim").addEventListener("click", () => {
+      this.bgaPerformAction("actAccept");
+      document.getElementById("claim_buttons").style.display = "none";
+    });
+
+    this.claimStock = new BgaCards.LineStock(
+      this.cardManager,
+      document.getElementById("claimhand"),
+      {},
+    );
+
+    this.claimStock.setSelectionMode("none");
+  }
+
+  private hideClaimHand() {
+    document.getElementById("claim_wrap").style.display = "none";
+    this.claimStock.removeAll();
+  }
+
+  private showClaimHand(claimPlayerId: number | undefined, cards: Card[]) {
+    if (!claimPlayerId) {
+      document.getElementById("claim_wrap").style.display = "none";
+      return;
+    }
+
+    document.getElementById("claim_wrap").style.display = "block";
+    delete document.getElementById("claim_buttons").style.display;
+    document.getElementById("claim_label").innerHTML = html` <span
+        style="color:#${this.gamedatas.players[claimPlayerId].color};"
+      >
+        ${this.gamedatas.players[claimPlayerId].name}</span
+      >
+      ${_("claims remaining tricks with:")}`;
+
+    for (const card of cards) {
+      console.log("Adding card to claim stock", card);
+      this.claimStock.addCard(card);
+    }
+    console.log("Claim stock", this.claimStock);
   }
 
   private createPlayerHand() {
@@ -613,6 +718,30 @@ class IsraeliWhist extends GameGui<IsraeliWhistGamedatas> {
     this.updateTricks(notif.player_id, 0);
   }
 
+  private notif_playerClaim(notif: {
+    player_id: number;
+    player_name: string;
+    cards: Card[];
+  }) {
+    if (notif.player_id == this.player_id) {
+      return;
+    }
+
+    this.showClaimHand(+notif.player_id, notif.cards);
+  }
+
+  private notif_playerContest(notif: {
+    player_id: number;
+    player_name: string;
+  }) {
+    console.log("notif_playerContest", notif);
+    this.hideClaimHand();
+    this.showMessage(
+      `${notif.player_name} ${_("contested the claim! Play continues.")}`,
+      "info",
+    );
+  }
+
   // #endregion
 
   // #region playing tricks
@@ -638,6 +767,25 @@ class IsraeliWhist extends GameGui<IsraeliWhistGamedatas> {
     );
     const voidStock = this.voidStocks[notif.player_id];
     await Promise.all(cardsToCollect.map((card) => voidStock.addCard(card)));
+  }
+
+  private async notif_claimAccepted(notif: {
+    player_id: number;
+    player_name: string;
+    remaining_tricks: number;
+  }) {
+    const cardsToMove = [
+      ...this.handStock.getCards(),
+      ...this.claimStock.getCards(),
+    ];
+    this.updateTricks(
+      notif.player_id,
+      this.tricksTaken[notif.player_id] + notif.remaining_tricks,
+    );
+    const voidStock = this.voidStocks[notif.player_id];
+    await Promise.all(cardsToMove.map((card) => voidStock.addCard(card)));
+    this.hideClaimHand();
+    await timeout(500);
   }
 
   // #endregion

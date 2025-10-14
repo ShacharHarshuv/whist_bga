@@ -44,4 +44,6 @@ interface IsraeliWhistGamedatas extends Gamedatas<IsraeliWhistPlayer> {
   roundNumber: string;
   numberOfRounds: string;
   frischCounter: string;
+  claimingPlayerId: string;
+  claimingPlayerCards: Card[];
 }

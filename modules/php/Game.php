@@ -48,6 +48,7 @@ class Game extends \Bga\GameFramework\Table
             "contractsSum" => 18,
             "numberOfContracts" => 19,
             "frischCounter" => 20,
+            "claimingPlayerId" => 22,
         ]);
 
         // Initialize suits and values
@@ -158,6 +159,8 @@ class Game extends \Bga\GameFramework\Table
 
         $this->setGameStateInitialValue("numberOfContracts", 0);
 
+        $this->setGameStateInitialValue("claimingPlayerId", 0);
+
         $this->createCards();
 
         // Init global values with their initial values
@@ -249,6 +252,14 @@ class Game extends \Bga\GameFramework\Table
         $result["trickSuit"] = $this->getGameStateValue("trickSuit");
         $result["numberOfRounds"] = $this->tableOptions->get(100);
         $result["frischCounter"] = $this->getGameStateValue("frischCounter");
+
+        $claimingPlayerId = $this->getGameStateValue("claimingPlayerId");
+        if ($claimingPlayerId && $claimingPlayerId != $current_player_id) {
+            $result["claimingPlayerId"] = $claimingPlayerId;
+            $result["claimingPlayerCards"] = array_values(
+                $this->deck->getCardsInLocation("hand", $claimingPlayerId)
+            );
+        }
 
         return $result;
     }
