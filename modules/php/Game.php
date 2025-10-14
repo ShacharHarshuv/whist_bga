@@ -43,6 +43,7 @@ class Game extends \Bga\GameFramework\Table
             "contractsSum" => 18,
             "numberOfContracts" => 19,
             "frischCounter" => 20,
+            "claimingPlayerId" => 22,
         ]);
 
         // Initialize suits and values
@@ -153,6 +154,8 @@ class Game extends \Bga\GameFramework\Table
 
         $this->setGameStateInitialValue("numberOfContracts", 0);
 
+        $this->setGameStateInitialValue("claimingPlayerId", 0);
+
         $this->createCards();
 
         // Init global values with their initial values
@@ -244,6 +247,14 @@ class Game extends \Bga\GameFramework\Table
         $result["trickSuit"] = $this->getGameStateValue("trickSuit");
         $result["numberOfRounds"] = $this->tableOptions->get(100);
 
+        $claimingPlayerId = $this->getGameStateValue("claimingPlayerId");
+        if ($claimingPlayerId && $claimingPlayerId != $current_player_id) {
+            $result["claimingPlayerId"] = $claimingPlayerId;
+            $result["claimingPlayerCards"] = array_values(
+                $this->deck->getCardsInLocation("hand", $claimingPlayerId)
+            );
+        }
+
         return $result;
     }
 
@@ -264,29 +275,31 @@ class Game extends \Bga\GameFramework\Table
 
     function formatCard(int|string $value, int|string $suit): string
     {
-        return $this->values_label[(int)$value] . $this->suits[(int)$suit]["emoji"];
+        return $this->values_label[(int) $value] .
+            $this->suits[(int) $suit]["emoji"];
     }
 
-    function getPlayerToGiveCards($player_id) {
+    function getPlayerToGiveCards($player_id)
+    {
         // pass to the player before
         return $this->getPlayerBefore($player_id);
     }
 
-    function sortCards($a, $b) {
+    function sortCards($a, $b)
+    {
         // Sort cards by suit first (matching client-side order), then by value
         // Client-side order: Diamonds(2), Clubs(1), Hearts(3), Spades(4)
         $suit_order = [2 => 1, 1 => 2, 3 => 3, 4 => 4]; // suit => sort_index
-        
-        if ($a['type'] == $b['type']) {
-            return $a['type_arg'] - $b['type_arg'];
+
+        if ($a["type"] == $b["type"]) {
+            return $a["type_arg"] - $b["type_arg"];
         }
-        return $suit_order[$a['type']] - $suit_order[$b['type']];
+        return $suit_order[$a["type"]] - $suit_order[$b["type"]];
     }
 
     //////////////////////////////////////////////////////////////////////////////
     //////////// Game state arguments
     ////////////
-
 
     //////////////////////////////////////////////////////////////////////////////
     //////////// Utility functions
