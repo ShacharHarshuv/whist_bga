@@ -17,6 +17,10 @@
 
 const html = String.raw;
 
+// Game constants
+const PASS = -2;
+const PASS_BLIND = -3;
+
 const suits = {
   1: {
     name: "club",
@@ -155,6 +159,16 @@ class IsraeliWhist extends GameGui<IsraeliWhistGamedatas> {
           _("Pass"),
           () => (this as any).bgaPerformAction("actPass"),
           {
+            color: "primary",
+          },
+        );
+      };
+
+      const createPassBlindButton = () => {
+        this.statusBar.addActionButton(
+          _("Pass Out"),
+          () => (this as any).bgaPerformAction("actPassBlind"),
+          {
             color: "alert",
           },
         );
@@ -163,6 +177,7 @@ class IsraeliWhist extends GameGui<IsraeliWhistGamedatas> {
       const suitSelection = () => {
         this.statusBar.removeActionButtons();
         createPassButton();
+        createPassBlindButton();
         for (const suit in suits) {
           this.statusBar.addActionButton(
             suits[suit].emoji,
@@ -569,7 +584,11 @@ class IsraeliWhist extends GameGui<IsraeliWhistGamedatas> {
   // #region Bidding round
 
   private notif_playerPass(notif) {
-    this.updatePlayerBid(notif.player_id, -2, 0);
+    this.updatePlayerBid(notif.player_id, PASS, 0);
+  }
+
+  private notif_playerPassBlind(notif) {
+    this.updatePlayerBid(notif.player_id, PASS_BLIND, 0);
   }
 
   private notif_playerBid(notif) {

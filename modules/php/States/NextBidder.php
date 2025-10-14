@@ -20,22 +20,26 @@ class NextBidder extends \Bga\GameFramework\States\GameState
         $bids = $this->game->getCollectionFromDb(
             "SELECT player_id, bid_value, bid_suit FROM player"
         );
-        $passes = count(
-            array_filter($bids, fn($bid) => $bid["bid_value"] == -2)
+        $allPasses = count(
+            array_filter($bids, fn($bid) => $bid["bid_value"] == Game::PASS || $bid["bid_value"] == Game::PASS_BLIND)
         );
-        $this->game->dump("num_passes_from_db:", $passes);
+        $this->game->dump("all_passes:", $allPasses);
 
+        // TODO - change this to understand if we have a bidder - not suit
         $suit = $this->game->getGameStateValue("currentBidSuit");
 
-        if ($passes < 3 || ($passes === 3 && !$suit)) {
+        // Move to the next bidder - if not all players have passed
+        if ($allPasses < 3 || ($allPasses === 3 && !$suit)) {
             $nextPlayerId = $this->game->activeNextPlayer();
-            while ($bids[$nextPlayerId]["bid_value"] == -2) {
+            // Skip players who have passed (regular or blind)
+            while ($bids[$nextPlayerId]["bid_value"] == Game::PASS || $bids[$nextPlayerId]["bid_value"] == Game::PASS_BLIND) {
                 $nextPlayerId = $this->game->activeNextPlayer();
             }
             return PlayerBid::class;
         }
 
-        if ($passes === 4) {
+        // All players passed - Frisch
+        if ($allPasses === 4) {
             $frischCounter = $this->game->getGameStateValue("frischCounter");
             if ($frischCounter >= 3) {
                 // Maximum 3 card exchanges reached, start new hand
@@ -45,15 +49,17 @@ class NextBidder extends \Bga\GameFramework\States\GameState
             return GiveCards::class; // Frisch - all players pass, exchange cards
         }
 
-        // Only execute this code if passes < 4
+        // BID WON
         $this->game->setGameStateValue("trumpSuit", $suit);
+        $currentBidPlayerId = $this->game->getGameStateValue("currentBidPlayerId");
+        $bidPlayerName = $this->game->getPlayerNameById($currentBidPlayerId);
         // Bid Won
         $this->game->notify->all(
             "bidWon",
             clienttranslate('${player_name} won the bid with ${bid_displayed}'),
             // todo: format this
             [
-                "player_name" => $this->game->getActivePlayerName(),
+                "player_name" => $bidPlayerName,
                 "value_displayed" => $this->game->getGameStateValue(
                     "currentBidValue"
                 ),
@@ -65,9 +71,7 @@ class NextBidder extends \Bga\GameFramework\States\GameState
             ]
         );
 
-        $this->game->gamestate->changeActivePlayer(
-            $this->game->getGameStateValue("currentBidPlayerId")
-        );
+        $this->game->gamestate->changeActivePlayer($currentBidPlayerId);
         return PlayerDeclaration::class;
     }
 }

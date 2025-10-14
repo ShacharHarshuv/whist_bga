@@ -57,13 +57,24 @@ class PlayerBid extends \Bga\GameFramework\States\GameState
     #[PossibleAction]
     public function actPass(int $activePlayerId)
     {
+        return $this->performPass($activePlayerId, Game::PASS, "playerPass", clienttranslate('${player_name} passes'));
+    }
+
+    #[PossibleAction]
+    public function actPassBlind(int $activePlayerId)
+    {
+        return $this->performPass($activePlayerId, Game::PASS_BLIND, "playerPassBlind", clienttranslate('${player_name} passes blind'));
+    }
+
+    private function performPass(int $activePlayerId, int $passValue, string $notificationType, string $message)
+    {
         $this->game->DbQuery(
-            "UPDATE player SET bid_value=-2 WHERE player_id='$activePlayerId'"
+            "UPDATE player SET bid_value=$passValue WHERE player_id='$activePlayerId'"
         );
 
         $this->game->notify->all(
-            "playerPass",
-            clienttranslate('${player_name} passes'),
+            $notificationType,
+            $message,
             [
                 "player_id" => $activePlayerId,
                 "player_name" => $this->game->getPlayerNameById(
@@ -83,7 +94,7 @@ class PlayerBid extends \Bga\GameFramework\States\GameState
 
         // Minimum bid increases by 1 for each Frisch
         $frischCounter = $this->game->getGameStateValue("frischCounter");
-        $minBid = 5 + $frischCounter;
+        $minBid = Game::MIN_BID + $frischCounter;
         
         if ($value < $minBid) {
             throw new \BgaVisibleSystemException(
@@ -108,6 +119,16 @@ class PlayerBid extends \Bga\GameFramework\States\GameState
         $this->game->setGameStateValue("currentBidValue", $value);
         $this->game->setGameStateValue("currentBidSuit", $suit);
         $this->game->setGameStateValue("currentBidPlayerId", $activePlayerId);
+
+        // Clear all regular passes (PASS = -2) but keep pass blinds (PASS_BLIND = -3)
+        // Only clear passes if this is the first bid (currentBidValue was 0)
+        if ($currentBidValue == 0) {
+            $this->game->DbQuery("
+                UPDATE player 
+                SET bid_value = 0 
+                WHERE bid_value = " . Game::PASS . "
+            ");
+        }
 
         // And notify
         $this->game->notify->all(

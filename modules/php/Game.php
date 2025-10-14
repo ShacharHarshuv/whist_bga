@@ -19,6 +19,11 @@ use Bga\Games\israeliwhist\States\ZombiePass;
 
 class Game extends \Bga\GameFramework\Table
 {
+    // Game constants
+    const PASS = -2;
+    const PASS_BLIND = -3;
+    const MIN_BID = 5;
+    
     public $suits; // For each suit number (1-4) what is the label (spade, heart, diamond, club)
     public $values_label; // For each card value (2-14) what is the label (2, ..., 10, J, Q, K, A)
     public $deck;
