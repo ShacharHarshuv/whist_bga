@@ -159,14 +159,14 @@ class IsraeliWhist extends GameGui<IsraeliWhistGamedatas> {
           _("Pass"),
           () => (this as any).bgaPerformAction("actPass"),
           {
-            color: "alert",
+            color: "primary",
           },
         );
       };
 
       const createPassBlindButton = () => {
         this.statusBar.addActionButton(
-          _("Pass Blind"),
+          _("Pass Out"),
           () => (this as any).bgaPerformAction("actPassBlind"),
           {
             color: "alert",
