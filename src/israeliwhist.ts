@@ -66,6 +66,7 @@ class IsraeliWhist extends GameGui<IsraeliWhistGamedatas> {
   private frischCounter: number;
   private contractsSum = 0;
   private totalContracts = 0;
+  private playerContracts: Record<number, number> = {};
 
   setup() {
     console.log("Setup: ", this.gamedatas);
@@ -639,10 +640,12 @@ class IsraeliWhist extends GameGui<IsraeliWhistGamedatas> {
     console.log("updatePlayerContract", playerId, value);
     if (value < 0) {
       this.updatePanelElement(playerId, "contract", html``);
+      this.playerContracts[playerId] = -1;
       return;
     }
     this.contractsSum += +value;
     this.totalContracts++;
+    this.playerContracts[playerId] = value;
     this.updatePanelElement(
       playerId,
       "contract",
@@ -652,7 +655,25 @@ class IsraeliWhist extends GameGui<IsraeliWhistGamedatas> {
   }
 
   private updateTricks(playerId: number, value: number) {
-    this.updatePanelElement(playerId, "tricks", html`<b>Tricks:</b> ${value}`);
+    const contract = this.playerContracts[playerId];
+    const colorClass = (() => {
+      if (contract === undefined || contract < 0) {
+        return "";
+      }
+      if (value > contract) {
+        return "tricks-over-contract";
+      }
+      if (value >= contract) {
+        return "tricks-met-contract";
+      }
+      return "";
+    })();
+
+    this.updatePanelElement(
+      playerId,
+      "tricks",
+      html`<b>Tricks:</b> <span class="${colorClass}">${value}</span>`,
+    );
     this.tricksTaken[+playerId] = +value;
   }
 
@@ -848,6 +869,7 @@ class IsraeliWhist extends GameGui<IsraeliWhistGamedatas> {
     this.handStock.removeAll();
     this.highestBid = null;
     this.frischCounter = 0;
+    this.playerContracts = {};
 
     this.updateTrumpSuit(0);
     this.updateRound(+roundNumber);

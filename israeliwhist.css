@@ -120,3 +120,13 @@
   min-width: 0;
   flex-basis: content;
 }
+
+.tricks-met-contract {
+  color: #0a0;
+  font-weight: bold;
+}
+
+.tricks-over-contract {
+  color: #d00;
+  font-weight: bold;
+}
