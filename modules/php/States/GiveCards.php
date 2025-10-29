@@ -36,7 +36,9 @@ class GiveCards extends \Bga\GameFramework\States\GameState
         $this->game->notify->all(
             "frisch",
             clienttranslate("Frisch! All players passed - exchanging cards"),
-            []
+            [
+                "frischCounter" => $newCounter,
+            ]
         );
 
         // Reset all passes (bid_value = PASS) to 0 for the next round of bidding

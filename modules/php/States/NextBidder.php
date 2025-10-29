@@ -21,7 +21,11 @@ class NextBidder extends \Bga\GameFramework\States\GameState
             "SELECT player_id, bid_value, bid_suit FROM player"
         );
         $allPasses = count(
-            array_filter($bids, fn($bid) => $bid["bid_value"] == Game::PASS || $bid["bid_value"] == Game::PASS_BLIND)
+            array_filter(
+                $bids,
+                fn($bid) => $bid["bid_value"] == Game::PASS ||
+                    $bid["bid_value"] == Game::PASS_BLIND
+            )
         );
         $this->game->dump("all_passes:", $allPasses);
 
@@ -32,7 +36,10 @@ class NextBidder extends \Bga\GameFramework\States\GameState
         if ($allPasses < 3 || ($allPasses === 3 && !$suit)) {
             $nextPlayerId = $this->game->activeNextPlayer();
             // Skip players who have passed (regular or blind)
-            while ($bids[$nextPlayerId]["bid_value"] == Game::PASS || $bids[$nextPlayerId]["bid_value"] == Game::PASS_BLIND) {
+            while (
+                $bids[$nextPlayerId]["bid_value"] == Game::PASS ||
+                $bids[$nextPlayerId]["bid_value"] == Game::PASS_BLIND
+            ) {
                 $nextPlayerId = $this->game->activeNextPlayer();
             }
             return PlayerBid::class;
@@ -45,13 +52,15 @@ class NextBidder extends \Bga\GameFramework\States\GameState
                 // Maximum 3 card exchanges reached, start new hand
                 return NewHand::class;
             }
-            
+
             return GiveCards::class; // Frisch - all players pass, exchange cards
         }
 
         // BID WON
         $this->game->setGameStateValue("trumpSuit", $suit);
-        $currentBidPlayerId = $this->game->getGameStateValue("currentBidPlayerId");
+        $currentBidPlayerId = $this->game->getGameStateValue(
+            "currentBidPlayerId"
+        );
         $bidPlayerName = $this->game->getPlayerNameById($currentBidPlayerId);
         // Bid Won
         $this->game->notify->all(
