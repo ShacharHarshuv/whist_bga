@@ -308,6 +308,31 @@ class IsraeliWhist extends GameGui<IsraeliWhistGamedatas> {
       case "PlayerTurn":
         showClaimButton();
         break;
+      case "ClaimReview":
+        this.statusBar.removeActionButtons();
+        if (!this.isPlayerActive(this.player_id)) {
+          return;
+        }
+        this.statusBar.addActionButton(
+          _("Accept"),
+          () => {
+            this.bgaPerformAction("actAccept");
+            this.statusBar.removeActionButtons();
+          },
+          {
+            color: "primary",
+          },
+        );
+        this.statusBar.addActionButton(
+          _("Contest"),
+          () => {
+            this.bgaPerformAction("actContest");
+          },
+          {
+            color: "alert",
+          },
+        );
+        break;
     }
   }
 
@@ -466,25 +491,9 @@ class IsraeliWhist extends GameGui<IsraeliWhistGamedatas> {
             >Player {player_name} claims the rest of the tricks with:</b
           >
           <div id="claimhand"></div>
-          <div id="claim_buttons">
-            <button class="bgabutton bgabutton_red" id="contest_claim">
-              ${_("Contest")}
-            </button>
-            <button class="bgabutton bgabutton_blue" id="accept_claim">
-              ${_("Accept")}
-            </button>
-          </div>
         </div>
       `,
     );
-
-    document.getElementById("contest_claim").addEventListener("click", () => {
-      this.bgaPerformAction("actContest");
-    });
-    document.getElementById("accept_claim").addEventListener("click", () => {
-      this.bgaPerformAction("actAccept");
-      document.getElementById("claim_buttons").style.display = "none";
-    });
 
     this.claimStock = new BgaCards.LineStock(
       this.cardManager,
@@ -507,7 +516,6 @@ class IsraeliWhist extends GameGui<IsraeliWhistGamedatas> {
     }
 
     document.getElementById("claim_wrap").style.display = "block";
-    delete document.getElementById("claim_buttons").style.display;
     document.getElementById("claim_label").innerHTML = html` <span
         style="color:#${this.gamedatas.players[claimPlayerId].color};"
       >
