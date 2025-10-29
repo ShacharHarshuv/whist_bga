@@ -43,6 +43,7 @@ class EndHand extends \Bga\GameFramework\States\GameState
         // Calculate scores for each player
         $players = $this->game->loadPlayersBasicInfos();
         $playerScores = [];
+        $contractsSum = $this->game->getGameStateValue("contractsSum");
 
         foreach (array_keys($players) as $player_id) {
             $sql = "SELECT tricks_taken, contract FROM player WHERE player_id='$player_id'";
@@ -60,10 +61,16 @@ class EndHand extends \Bga\GameFramework\States\GameState
             $sql = "UPDATE player SET player_score = player_score + $score WHERE player_id='$player_id'";
             $this->game->DbQuery($sql);
 
-            // Collect scoring data for notification
+            // Collect scoring data for notification with detailed breakdown
             $playerScores[] = [
                 "player_id" => $player_id,
                 "points" => $score,
+                "contract" => (int) $contract,
+                "tricks_taken" => (int) $tricks_taken,
+                "fulfilled" => (int) $tricks_taken == (int) $contract,
+                "contractsSum" => $contractsSum,
+                "penalty" => $this->game->tableOptions->get(102),
+                "zeroScoreInOver" => $this->game->tableOptions->get(101),
             ];
         }
 

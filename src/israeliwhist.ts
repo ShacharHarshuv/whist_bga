@@ -852,15 +852,138 @@ class IsraeliWhist extends GameGui<IsraeliWhistGamedatas> {
    * At the beginning of the game new hand happens without points
    * */
 
-  private notif_points(
+  private async notif_points(
     scores: {
       player_id: number;
       points: number;
+      contract: number;
+      tricks_taken: number;
+      fulfilled: boolean;
+      contractsSum: number;
+      penalty: number;
+      zeroScoreInOver: number;
     }[],
   ) {
+    this.showScoringDialog(scores);
+
     for (const score of scores) {
       this.scoreCtrl[score.player_id].incValue(score.points);
     }
+
+    await timeout(3000);
+  }
+
+  private showScoringDialog(
+    scores: {
+      player_id: number;
+      points: number;
+      contract: number;
+      tricks_taken: number;
+      fulfilled: boolean;
+      contractsSum: number;
+      penalty: number;
+      zeroScoreInOver: number;
+    }[],
+  ) {
+    const rows = scores
+      .map((score) => {
+        const player = this.gamedatas.players[score.player_id];
+        const { contract, tricks_taken, fulfilled } = score;
+        const calculation = this.getScoringCalculation(score);
+        const takenColor = fulfilled ? "green" : "red";
+        const currentTotal = this.scoreCtrl[score.player_id].getValue();
+
+        return html`
+          <tr>
+            <td
+              style="color: #${player.color}; font-weight: bold; padding: 12px 8px;"
+            >
+              ${player.name}
+            </td>
+            <td style="text-align: center; padding: 12px 8px;">${contract}</td>
+            <td
+              style="text-align: center; padding: 12px 8px; color: ${takenColor}; font-weight: bold;"
+            >
+              ${tricks_taken}
+            </td>
+            <td
+              style="text-align: right; padding: 12px 8px; font-family: monospace;"
+            >
+              ${calculation}
+            </td>
+            <td style="text-align: right; padding: 12px 8px;">
+              ${currentTotal}
+            </td>
+          </tr>
+        `;
+      })
+      .join("");
+
+    const dialogHtml = html`
+      <div id="scoring-dialog" style="padding: 10px;">
+        <table style="width: 100%; border-collapse: collapse;">
+          <thead>
+            <tr style="border-bottom: 2px solid #ccc;">
+              <th style="text-align: left; padding: 12px 8px;">Player</th>
+              <th style="text-align: center; padding: 12px 8px;">Contract</th>
+              <th style="text-align: center; padding: 12px 8px;">Taken</th>
+              <th style="text-align: right; padding: 12px 8px;">Points</th>
+              <th style="text-align: right; padding: 12px 8px;">Total</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${rows}
+          </tbody>
+        </table>
+      </div>
+    `;
+
+    const dialog = new ebg.popindialog();
+    dialog.create("roundScoringDialog");
+    dialog.setTitle(_("Round Scoring"));
+    dialog.setContent(dialogHtml);
+    dialog.show();
+  }
+
+  private getScoringCalculation(score: {
+    contract: number;
+    tricks_taken: number;
+    fulfilled: boolean;
+    points: number;
+    contractsSum: number;
+    penalty: number;
+    zeroScoreInOver: number;
+  }): string {
+    const {
+      contract,
+      tricks_taken,
+      fulfilled,
+      points,
+      contractsSum,
+      penalty,
+      zeroScoreInOver,
+    } = score;
+
+    if (fulfilled) {
+      if (contract === 0) {
+        const isOver = contractsSum > 13;
+        const basePoints = isOver ? zeroScoreInOver : 50;
+        return `<strong style="color: green;">+${basePoints}</strong>`;
+      }
+
+      return `${contract}² + 10 = <strong style="color: green;">+${contract * contract + 10}</strong>`;
+    }
+
+    const diff = Math.abs(tricks_taken - contract);
+
+    if (contract === 0) {
+      const calculation = diff === 1 ? -50 : -50 + (diff - 1) * 10;
+      return diff === 1
+        ? `<strong style="color: red;">-50</strong>`
+        : `-50 + ${(diff - 1) * 10} = <strong style="color: red;">${calculation}</strong>`;
+    }
+
+    return `${diff} × -${penalty} = <strong style="color: red;">${points}</strong>`;
   }
 
   private async notif_newHand({ cards, roundNumber }) {
