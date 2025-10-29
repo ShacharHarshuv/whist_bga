@@ -93,6 +93,13 @@
   padding: 0.5em;
 }
 
+#over-under-indication {
+  text-align: center;
+  font-size: 1.5rem;
+  color: #d00;
+  padding: 0.25em;
+}
+
 #round-indication {
   max-width: 43rem;
   margin: 0 auto;

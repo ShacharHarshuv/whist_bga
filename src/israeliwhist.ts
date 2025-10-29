@@ -534,6 +534,7 @@ class IsraeliWhist extends GameGui<IsraeliWhistGamedatas> {
     this.getGameAreaElement().insertAdjacentHTML(
       "beforeend",
       html`
+        <div id="over-under-indication"></div>
         <div id="myhand_wrap" class="whiteblock">
           <b id="myhand_label">${_("My hand")}</b>
           <div id="myhand"></div>
@@ -647,11 +648,33 @@ class IsraeliWhist extends GameGui<IsraeliWhistGamedatas> {
       "contract",
       html`<b>Contract:</b> ${value}`,
     );
+    this.updateOverUnderIndication();
   }
 
   private updateTricks(playerId: number, value: number) {
     this.updatePanelElement(playerId, "tricks", html`<b>Tricks:</b> ${value}`);
     this.tricksTaken[+playerId] = +value;
+  }
+
+  private updateOverUnderIndication() {
+    if (this.totalContracts !== 4) {
+      document.getElementById("over-under-indication").innerHTML = html``;
+      return;
+    }
+
+    const difference = this.contractsSum - 13;
+
+    if (difference === 0) {
+      document.getElementById("over-under-indication").innerHTML = html``;
+    } else if (difference > 0) {
+      document.getElementById("over-under-indication").innerHTML = html`
+        <b>${difference} Over</b>
+      `;
+    } else {
+      document.getElementById("over-under-indication").innerHTML = html`
+        <b>${Math.abs(difference)} Under</b>
+      `;
+    }
   }
 
   private updatePanelElement(
@@ -828,6 +851,7 @@ class IsraeliWhist extends GameGui<IsraeliWhistGamedatas> {
 
     this.updateTrumpSuit(0);
     this.updateRound(+roundNumber);
+    this.updateOverUnderIndication();
     for (const playerId in this.gamedatas.players) {
       this.updatePanelElement(playerId, "contract", html``);
       this.updatePanelElement(playerId, "tricks", html``);
