@@ -777,6 +777,9 @@ class IsraeliWhist extends GameGui<IsraeliWhistGamedatas> {
     const cardsToMove = [
       ...this.handStock.getCards(),
       ...this.claimStock.getCards(),
+      ...Object.values(this.tableStocks)
+        .map((stock) => stock.getCards())
+        .flat(),
     ];
     this.updateTricks(
       notif.player_id,
