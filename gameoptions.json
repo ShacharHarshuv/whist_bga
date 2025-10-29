@@ -12,6 +12,11 @@
         "description": "Shorter game with 10 rounds",
         "tmdisplay": "10 rounds"
       },
+      "7": {
+        "name": "7 rounds",
+        "description": "Short game with 7 rounds",
+        "tmdisplay": "7 rounds"
+      },
       "5": {
         "name": "5 rounds",
         "description": "Super short game with 5 rounds",
