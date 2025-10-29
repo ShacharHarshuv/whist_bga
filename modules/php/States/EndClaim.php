@@ -20,6 +20,7 @@ class EndClaim extends \Bga\GameFramework\States\GameState
         $claimingPlayerId = (int) $this->game->getGameStateValue(
             "claimingPlayerId"
         );
+        $this->game->setGameStateValue("claimingPlayerId", 0);
         $numberOfRemainingTricks = count(
             $this->game->deck->getPlayerHand($claimingPlayerId)
         );
