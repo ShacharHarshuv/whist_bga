@@ -23,7 +23,7 @@ class Game extends \Bga\GameFramework\Table
     const PASS = -2;
     const PASS_BLIND = -3;
     const MIN_BID = 5;
-    
+
     public $suits; // For each suit number (1-4) what is the label (spade, heart, diamond, club)
     public $values_label; // For each card value (2-14) what is the label (2, ..., 10, J, Q, K, A)
     public $deck;
@@ -248,6 +248,7 @@ class Game extends \Bga\GameFramework\Table
 
         $result["trickSuit"] = $this->getGameStateValue("trickSuit");
         $result["numberOfRounds"] = $this->tableOptions->get(100);
+        $result["frischCounter"] = $this->getGameStateValue("frischCounter");
 
         return $result;
     }
@@ -269,29 +270,31 @@ class Game extends \Bga\GameFramework\Table
 
     function formatCard(int|string $value, int|string $suit): string
     {
-        return $this->values_label[(int)$value] . $this->suits[(int)$suit]["emoji"];
+        return $this->values_label[(int) $value] .
+            $this->suits[(int) $suit]["emoji"];
     }
 
-    function getPlayerToGiveCards($player_id) {
+    function getPlayerToGiveCards($player_id)
+    {
         // pass to the player before
         return $this->getPlayerBefore($player_id);
     }
 
-    function sortCards($a, $b) {
+    function sortCards($a, $b)
+    {
         // Sort cards by suit first (matching client-side order), then by value
         // Client-side order: Diamonds(2), Clubs(1), Hearts(3), Spades(4)
         $suit_order = [2 => 1, 1 => 2, 3 => 3, 4 => 4]; // suit => sort_index
-        
-        if ($a['type'] == $b['type']) {
-            return $a['type_arg'] - $b['type_arg'];
+
+        if ($a["type"] == $b["type"]) {
+            return $a["type_arg"] - $b["type_arg"];
         }
-        return $suit_order[$a['type']] - $suit_order[$b['type']];
+        return $suit_order[$a["type"]] - $suit_order[$b["type"]];
     }
 
     //////////////////////////////////////////////////////////////////////////////
     //////////// Game state arguments
     ////////////
-
 
     //////////////////////////////////////////////////////////////////////////////
     //////////// Utility functions
