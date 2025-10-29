@@ -50,6 +50,13 @@ class NewHand extends \Bga\GameFramework\States\GameState
             "UPDATE player SET bid_value = 0, bid_suit = 0, contract = -1"
         );
 
+        // Set starting player in round-robin fashion based on round number
+        $roundNumber = $this->game->getGameStateValue("roundNumber");
+        $playerIds = array_keys($players);
+        $startingPlayerIndex = ($roundNumber - 1) % count($playerIds);
+        $startingPlayerId = $playerIds[$startingPlayerIndex];
+        $this->game->gamestate->changeActivePlayer($startingPlayerId);
+
         return PlayerBid::class;
     }
 }
